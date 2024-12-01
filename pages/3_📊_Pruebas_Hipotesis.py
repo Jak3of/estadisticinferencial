@@ -596,7 +596,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig_box, use_container_width=True, key="plot_comparacion_grupos")
+        st.plotly_chart(fig_box, use_container_width=True, key="box_plot_comparacion_grupos")
         
     # 1.4 Diferencia de medias con varianza desconocida iguales
     with pruebas_tabs[3]:
@@ -797,7 +797,7 @@ with main_tabs[0]:
                             showlegend=True
                         )
                         
-                        st.plotly_chart(fig_box, use_container_width=True)
+                        st.plotly_chart(fig_box, use_container_width=True, key="box_plot_genero")
                         
     # 1.5 Diferencia de medias con varianza desconocida diferentes
     with pruebas_tabs[4]:
@@ -993,7 +993,7 @@ with main_tabs[0]:
                         showlegend=True
                     )
                     
-                    st.plotly_chart(fig_box, use_container_width=True)
+                    st.plotly_chart(fig_box, use_container_width=True, key="box_plot_genero_2")
                     
     # 1.6 Proporción
     with pruebas_tabs[5]:
