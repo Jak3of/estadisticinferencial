@@ -241,7 +241,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_media_edad")
         
     # 1.2 Media con varianza desconocida
     with pruebas_tabs[1]:
@@ -401,7 +401,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_media_satisfaccion")
         
     # 1.3 Diferencia de medias con varianza conocida
     with pruebas_tabs[2]:
@@ -579,7 +579,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_diferencia_medias")
         
         # Mostrar box plot de comparación
         st.write("### Comparación de Grupos")
@@ -596,7 +596,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig_box)
+        st.plotly_chart(fig_box, use_container_width=True, key="plot_comparacion_grupos")
         
     # 1.4 Diferencia de medias con varianza desconocida iguales
     with pruebas_tabs[3]:
@@ -756,7 +756,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_media_satisfaccion_2")
         
     # 1.5 Diferencia de medias con varianza desconocida diferentes
     with pruebas_tabs[4]:
@@ -902,8 +902,8 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
-
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_diferencia_medias_varianzas_diferentes")
+        
     # 1.6 Proporción
     with pruebas_tabs[5]:
         st.write("## 1.6 Prueba de Hipótesis para una Proporción")
@@ -974,7 +974,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_proporcion")
         
     # 1.7 Diferencia de Proporciones
     with pruebas_tabs[6]:
@@ -1089,7 +1089,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_diferencia_proporciones")
         
         # Interpretación
         st.write("### Interpretación")
@@ -1107,8 +1107,8 @@ with main_tabs[0]:
             Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
             
             **Conclusión:**  
-            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que 
-            hay una diferencia significativa en la proporción de visitantes satisfechos entre hombres y mujeres. 
+            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay 
+            una diferencia significativa en la proporción de visitantes satisfechos entre hombres y mujeres. 
             La diferencia observada de {abs(p1 - p2):.1%} puntos porcentuales no es estadísticamente significativa.
             """)
 
@@ -1181,7 +1181,7 @@ with main_tabs[0]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_varianza")
         
 # Prueba de Signos: Importancia del Costo vs Preferencia
 st.markdown("### Prueba de Signos: Importancia del Costo vs Preferencia")
@@ -1290,8 +1290,8 @@ with main_tabs[1]:
             Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
             
             **Interpretación:**  
-            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que 
-            exista una diferencia significativa entre la importancia que los visitantes le dan al costo y su nivel de preferencia por el lugar.
+            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que exista 
+            una diferencia significativa entre la importancia que los visitantes le dan al costo y su nivel de preferencia por el lugar.
             """)
 
         # Visualización
@@ -1345,7 +1345,7 @@ with main_tabs[1]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_prueba_signos")
         
     # 2.2 Prueba de rachas
     with no_param_tabs[1]:
@@ -1466,7 +1466,7 @@ with main_tabs[1]:
             showlegend=True
         )
         
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True, key="plot_prueba_rachas")
         
         # Interpretación
         st.write("### Conclusión")
