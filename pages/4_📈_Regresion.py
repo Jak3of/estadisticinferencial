@@ -8,6 +8,19 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
 import seaborn as sns
 
+def latex_copyable(formula, label=""):
+    """Muestra una fórmula LaTeX con un botón para copiar."""
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.latex(formula)
+    with col2:
+        if st.button(f"📋 Copiar", key=f"copy_{label}"):
+            try:
+                st.code(formula, language="latex")
+                st.toast("¡Fórmula mostrada! Puedes copiarla desde el bloque de código", icon="✅")
+            except Exception as e:
+                st.error(f"Error al mostrar la fórmula: {str(e)}")
+
 # Configuración de la página
 st.set_page_config(
     page_title="Análisis de Regresión",
@@ -114,35 +127,47 @@ with main_tabs[0]:
     }).style.format("{:.4f}"))
     
     # Mostrar fórmulas y cálculos
-    st.markdown(f"""
+    st.markdown("""
     ### Fórmulas y Cálculos
     
     Para la regresión lineal simple Y = β₀ + β₁X, calculamos:
-    
-    **β₁ (pendiente):**
-    $$
-    \\beta_1 = \\frac{{n\\sum XY - \\sum X\\sum Y}}{{n\\sum X^2 - (\\sum X)^2}}
-    $$
-    
-    $$
-    \\beta_1 = \\frac{{({n:.0f})({sumas['XY']:.4f}) - ({sumas['X']:.4f})({sumas['Y']:.4f})}}{{({n:.0f})({sumas['X²']:.4f}) - ({sumas['X']:.4f})^2}} = {beta1:.4f}
-    $$
-    
-    **β₀ (intercepto):**
-    $$
-    \\beta_0 = \\frac{{\\sum Y - \\beta_1\\sum X}}{{n}}
-    $$
-    
-    $$
-    \\beta_0 = \\frac{{{sumas['Y']:.4f} - ({beta1:.4f})({sumas['X']:.4f})}}{{{n:.0f}}} = {beta0:.4f}
-    $$
-    
-    Por lo tanto, la ecuación de regresión es:
-    
-    $$
-    Y = {beta0:.4f} + {beta1:.4f}X
-    $$
     """)
+    
+    st.markdown("**β₁ (pendiente):**")
+    # Fórmula general de beta1
+    formula_beta1 = r"\beta_1 = \frac{n\sum XY - \sum X\sum Y}{n\sum X^2 - (\sum X)^2}"
+    latex_copyable(formula_beta1, "beta1_general")
+    
+    # Fórmula con valores de beta1
+    formula_beta1_val = r"\beta_1 = \frac{(%d)(%.4f) - (%.4f)(%.4f)}{(%d)(%.4f) - (%.4f)^2} = %.4f" % (
+        n, sumas['XY'], sumas['X'], sumas['Y'],
+        n, sumas['X²'], sumas['X'], beta1
+    )
+    latex_copyable(formula_beta1_val, "beta1_valores")
+    
+    st.markdown("**β₀ (intercepto):**")
+    # Fórmula general de beta0
+    formula_beta0 = r"\beta_0 = \frac{\sum Y - \beta_1\sum X}{n}"
+    latex_copyable(formula_beta0, "beta0_general")
+    
+    # Fórmula con valores de beta0
+    formula_beta0_val = r"\beta_0 = \frac{%.4f - (%.4f)(%.4f)}{%d} = %.4f" % (
+        sumas['Y'], beta1, sumas['X'], n, beta0
+    )
+    latex_copyable(formula_beta0_val, "beta0_valores")
+    
+    st.markdown("Por lo tanto, la ecuación de regresión es:")
+    
+    # Mostrar la ecuación de regresión
+    st.markdown("### Ecuación de Regresión")
+    
+    # Fórmula general
+    formula_reg = r"Y = \beta_0 + \beta_1X"
+    latex_copyable(formula_reg, "eq_reg_general")
+    
+    # Fórmula con valores
+    formula_reg_val = r"Y = %.4f + %.4fX" % (beta0, beta1)
+    latex_copyable(formula_reg_val, "eq_reg_valores")
     
     # Crear y ajustar el modelo
     modelo = LinearRegression()
@@ -177,21 +202,23 @@ with main_tabs[0]:
     with col3:
         st.metric("P-valor", f"{p_value:.4f}")
     
-    # Ecuación de regresión con significancia
-    st.markdown(f"""
-    ### Ecuación de Regresión
+    # Mostrar la ecuación de regresión con el modelo ajustado
+    st.markdown("### Ecuación de Regresión")
     
-    Y = {modelo.intercept_:.4f} + {modelo.coef_[0]:.4f}X
+    # Fórmula con coeficientes del modelo
+    formula_modelo = r"Y = %.4f + %.4fX" % (modelo.intercept_, modelo.coef_[0])
+    latex_copyable(formula_modelo, "eq_modelo")
     
+    st.markdown("""
     **Estadísticas de la pendiente:**
-    - Error estándar: {sd_b:.4f}
-    - t-valor: {t_stat:.4f}
-    - p-valor: {p_value:.4f}
+    - Error estándar: %.4f
+    - t-valor: %.4f
+    - p-valor: %.4f
     
     Donde:
-    - Y: {y_label}
-    - X: {x_label}
-    """)
+    - Y: %s
+    - X: %s
+    """ % (sd_b, t_stat, p_value, y_label, x_label))
     
     # Visualización
     st.markdown("### Visualización")
@@ -361,37 +388,30 @@ with main_tabs[1]:
     }).style.format("{:.4f}"))
     
     # Ecuaciones normales
-    st.markdown("""
-    ### Ecuaciones Normales
+    st.markdown("### Ecuaciones Normales")
+    st.markdown("Para encontrar los coeficientes β₀, β₁ y β₂, partimos de las ecuaciones normales:")
     
-    Para encontrar los coeficientes β₀, β₁ y β₂, partimos de las ecuaciones normales:
+    # Primera ecuación
+    formula1 = r"\sum Y = n\beta_0 + \beta_1\sum X_1 + \beta_2\sum X_2"
+    latex_copyable(formula1, "eq_normal_1")
     
-    $$
-    \\sum Y = n\\beta_0 + \\beta_1\\sum X_1 + \\beta_2\\sum X_2
-    $$
+    # Segunda ecuación
+    formula2 = r"\sum X_1Y = \beta_0\sum X_1 + \beta_1\sum X_1^2 + \beta_2\sum X_1X_2"
+    latex_copyable(formula2, "eq_normal_2")
     
-    $$
-    \\sum X_1Y = \\beta_0\\sum X_1 + \\beta_1\\sum X_1^2 + \\beta_2\\sum X_1X_2
-    $$
+    # Tercera ecuación
+    formula3 = r"\sum X_2Y = \beta_0\sum X_2 + \beta_1\sum X_1X_2 + \beta_2\sum X_2^2"
+    latex_copyable(formula3, "eq_normal_3")
     
-    $$
-    \\sum X_2Y = \\beta_0\\sum X_2 + \\beta_1\\sum X_1X_2 + \\beta_2\\sum X_2^2
-    $$
+    st.markdown("Reemplazando los valores:")
     
-    Reemplazando los valores:
-    
-    $$
-    \\begin{align*}
-    %.4f &= %.4f\\beta_0 + %.4f\\beta_1 + %.4f\\beta_2 \\\\
-    %.4f &= %.4f\\beta_0 + %.4f\\beta_1 + %.4f\\beta_2 \\\\
-    %.4f &= %.4f\\beta_0 + %.4f\\beta_1 + %.4f\\beta_2
-    \\end{align*}
-    $$
-    """ % (
+    # Sistema de ecuaciones con valores
+    formula4 = r"\begin{align*} %.4f &= %.4f\beta_0 + %.4f\beta_1 + %.4f\beta_2 \\ %.4f &= %.4f\beta_0 + %.4f\beta_1 + %.4f\beta_2 \\ %.4f &= %.4f\beta_0 + %.4f\beta_1 + %.4f\beta_2 \end{align*}" % (
         sum_y, n, sum_x1, sum_x2,
         sum_yx1, sum_x1, sum_x1_2, sum_x1x2,
         sum_yx2, sum_x2, sum_x1x2, sum_x2_2
-    ))
+    )
+    latex_copyable(formula4, "eq_system")
     
     # Calcular determinantes para el método de Cramer
     A = np.array([
@@ -424,125 +444,82 @@ with main_tabs[1]:
     det_1 = np.linalg.det(A1)
     det_2 = np.linalg.det(A2)
     
-    # Mostrar proceso de cálculo
-    st.markdown("""
-    ### Proceso de Cálculo de Coeficientes
+    st.markdown("### Proceso de Cálculo de Coeficientes")
+    st.markdown("Usando el método de Cramer, calculamos cada β:")
     
-    Usando el método de Cramer, calculamos cada β:
+    # Fórmula general de Cramer
+    formula_cramer = r"\beta_i = \frac{|A_i|}{|A|}"
+    latex_copyable(formula_cramer, "cramer_general")
     
-    $$
-    \\beta_i = \\frac{|A_i|}{|A|}
-    $$
+    st.markdown("Donde |A| es el determinante de la matriz principal:")
     
-    Donde |A| es el determinante de la matriz principal:
-    
-    $$
-    |A| = \\begin{vmatrix} 
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f
-    \\end{vmatrix} = %.4f
-    $$
-    
-    Para β₀:
-    $$
-    |A_0| = \\begin{vmatrix}
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f
-    \\end{vmatrix} = %.4f
-    $$
-    
-    $$
-    \\beta_0 = \\frac{%.4f}{%.4f} = %.4f
-    $$
-    
-    Para β₁:
-    $$
-    |A_1| = \\begin{vmatrix}
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f
-    \\end{vmatrix} = %.4f
-    $$
-    
-    $$
-    \\beta_1 = \\frac{%.4f}{%.4f} = %.4f
-    $$
-    
-    Para β₂:
-    $$
-    |A_2| = \\begin{vmatrix}
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f \\\\
-    %.4f & %.4f & %.4f
-    \\end{vmatrix} = %.4f
-    $$
-    
-    $$
-    \\beta_2 = \\frac{%.4f}{%.4f} = %.4f
-    $$
-    """ % (
-        # Matriz A
+    # Matriz A principal
+    matriz_A = r"\begin{vmatrix} %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \end{vmatrix} = %.4f" % (
         n, sum_x1, sum_x2,
         sum_x1, sum_x1_2, sum_x1x2,
         sum_x2, sum_x1x2, sum_x2_2,
-        det_principal,
-        # Matriz A0
+        det_principal
+    )
+    latex_copyable(matriz_A, "matriz_A")
+    
+    # Para β₀
+    st.markdown("Para β₀:")
+    matriz_A0 = r"\begin{vmatrix} %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \end{vmatrix} = %.4f" % (
         sum_y, sum_x1, sum_x2,
         sum_yx1, sum_x1_2, sum_x1x2,
         sum_yx2, sum_x1x2, sum_x2_2,
-        det_0,
-        # β0
-        det_0, det_principal, det_0/det_principal,
-        # Matriz A1
+        det_0
+    )
+    latex_copyable(matriz_A0, "matriz_A0")
+    
+    beta0_calc = r"\beta_0 = \frac{%.4f}{%.4f} = %.4f" % (det_0, det_principal, det_0/det_principal)
+    latex_copyable(beta0_calc, "beta0_calc")
+    
+    # Para β₁
+    st.markdown("Para β₁:")
+    matriz_A1 = r"\begin{vmatrix} %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \end{vmatrix} = %.4f" % (
         n, sum_y, sum_x2,
         sum_x1, sum_yx1, sum_x1x2,
         sum_x2, sum_yx2, sum_x2_2,
-        det_1,
-        # β1
-        det_1, det_principal, det_1/det_principal,
-        # Matriz A2
+        det_1
+    )
+    latex_copyable(matriz_A1, "matriz_A1")
+    
+    beta1_calc = r"\beta_1 = \frac{%.4f}{%.4f} = %.4f" % (det_1, det_principal, det_1/det_principal)
+    latex_copyable(beta1_calc, "beta1_calc")
+    
+    # Para β₂
+    st.markdown("Para β₂:")
+    matriz_A2 = r"\begin{vmatrix} %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \\ %.4f & %.4f & %.4f \end{vmatrix} = %.4f" % (
         n, sum_x1, sum_y,
         sum_x1, sum_x1_2, sum_yx1,
         sum_x2, sum_x1x2, sum_yx2,
-        det_2,
-        # β2
-        det_2, det_principal, det_2/det_principal
-    ))
+        det_2
+    )
+    latex_copyable(matriz_A2, "matriz_A2")
+    
+    beta2_calc = r"\beta_2 = \frac{%.4f}{%.4f} = %.4f" % (det_2, det_principal, det_2/det_principal)
+    latex_copyable(beta2_calc, "beta2_calc")
     
     # Resolver el sistema de ecuaciones
     coef = np.array([det_0/det_principal, det_1/det_principal, det_2/det_principal])
     
     # Mostrar ecuación final e interpretación
-    st.markdown(f"""
-    ### Ecuación de Regresión Múltiple
+    st.markdown("### Ecuación de Regresión Múltiple")
     
-    $$
-    Y = \\beta_0 + \\beta_1X_1 + \\beta_2X_2
-    $$
+    # Ecuación general
+    eq_general = r"Y = \beta_0 + \beta_1X_1 + \beta_2X_2"
+    latex_copyable(eq_general, "eq_multiple_general")
     
-    $$
-    Y = {coef[0]:.4f} + {coef[1]:.4f}X_1 + {coef[2]:.4f}X_2
-    $$
+    # Ecuación con valores
+    eq_valores = r"Y = %.4f + %.4f X_1 + %.4f X_2" % (coef[0], coef[1], coef[2])
+    latex_copyable(eq_valores, "eq_multiple_valores")
     
+    st.markdown("""
     Donde:
     - Y: Satisfacción
     - X₁: Edad
     - X₂: Frecuencia de Visitas
-    
-    ### Interpretación de los Coeficientes
-    
-    **β₀ = {coef[0]:.4f}**: La satisfacción promedio que tienen los visitantes es de {coef[0]:.4f}, 
-    si la edad y la frecuencia de visitas son cero.
-    
-    **β₁ = {coef[1]:.4f}**: Por cada incremento de un año en la edad, 
-    la satisfacción promedio {'aumentará' if coef[1] > 0 else 'disminuirá'} en {abs(coef[1]):.4f} unidades,
-    manteniendo la frecuencia de visitas constante.
-    
-    **β₂ = {coef[2]:.4f}**: Por cada incremento en la frecuencia de visitas,
-    la satisfacción promedio {'aumentará' if coef[2] > 0 else 'disminuirá'} en {abs(coef[2]):.4f} unidades,
-    manteniendo la edad constante.
     """)
     
     # Crear y ajustar el modelo
