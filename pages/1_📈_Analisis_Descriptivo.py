@@ -118,6 +118,8 @@ with tab2:
             satisfaccion_map = {
                 'Poco satisfecho': 'Insatisfecho',
                 'Poco satisfecha': 'Insatisfecho',
+                'Insatisfecho': 'Insatisfecho',
+                'Insatisfecha': 'Insatisfecho',
                 'Satisfecho': 'Satisfecho',
                 'Satisfecha': 'Satisfecho',
                 'Muy satisfecho': 'Muy Satisfecho',
@@ -126,9 +128,14 @@ with tab2:
             # Aplicar el mapeo y recalcular las frecuencias
             df_temp = df.copy()
             df_temp['Satisfacción'] = df_temp['Satisfacción'].map(satisfaccion_map)
-            counts = df_temp['Satisfacción'].value_counts().reset_index()
-            counts.columns = ['Categoría', 'Cantidad']
-
+            
+            # Asegurarse de que todas las categorías estén presentes
+            todas_categorias = ['Insatisfecho', 'Satisfecho', 'Muy Satisfecho']
+            counts = pd.DataFrame({
+                'Categoría': todas_categorias,
+                'Cantidad': [df_temp['Satisfacción'].eq(cat).sum() for cat in todas_categorias]
+            })
+        
         # Crear una copia de counts para los gráficos (sin el Total)
         counts_for_plot = counts.copy()
         
