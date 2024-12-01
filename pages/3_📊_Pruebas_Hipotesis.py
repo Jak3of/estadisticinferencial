@@ -82,7 +82,7 @@ with main_tabs[0]:
         "1.5 Diferencia de Medias (σ² desconocida diferentes)",
         "1.6 Proporción",
         "1.7 Diferencia de Proporciones",
-        "1.8 Varianza"
+        "1.8 Prueba Chi-cuadrado para la Varianza de una Población"
     ])
     
     # 1.1 Media con varianza conocida
@@ -526,8 +526,8 @@ with main_tabs[0]:
             Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
             
             **Interpretación:**  
-            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay 
-            una diferencia significativa en la frecuencia de visitas entre los grupos de edad. Aunque el grupo 
+            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay una 
+            diferencia significativa en la frecuencia de visitas entre los grupos de edad. Aunque el grupo 
             {"joven (≤ 25 años)" if media1 > media2 else "adulto (> 25 años)"} tiene una frecuencia promedio 
             ligeramente mayor ({max(media1, media2):.2f} visitas/mes vs {min(media1, media2):.2f} visitas/mes), 
             esta diferencia no es estadísticamente significativa.
@@ -600,310 +600,401 @@ with main_tabs[0]:
         
     # 1.4 Diferencia de medias con varianza desconocida iguales
     with pruebas_tabs[3]:
-        st.write("## 1.4 Prueba de Hipótesis para la Diferencia de Medias (σ² desconocida iguales)")
+        st.write("## 1.4 Prueba de Hipótesis para la Diferencia de Medias (σ² desconocidas iguales)")
         
         st.write("""
         ### Ejemplo: Satisfacción por Género
         
         **Contexto del Problema:**  
-        El administrador de Aventura Park ha estado monitoreando la satisfacción de sus visitantes 
-        en una escala del 1 al 5. La administración del parque ha establecido como estándar de calidad 
-        un nivel de satisfacción de 4 puntos. El equipo de gestión desea verificar si el nivel actual 
-        de satisfacción es diferente del estándar establecido.
+        El administrador de Aventura Park desea investigar si existe una diferencia significativa en los niveles 
+        de satisfacción entre visitantes masculinos y femeninos.
         
         **Planteamiento:**
-        - Variable de estudio: Nivel de satisfacción de los visitantes
-        - Tamaño de muestra: 30 visitantes
+        - Variable de estudio: Nivel de satisfacción de los visitantes por género
+        - Hipótesis nula (H₀): No hay diferencia en la satisfacción media entre géneros
         - Nivel de significancia (α): 0.05
         
         **Hipótesis:**  
-        - H₀: μ = 4 (El nivel promedio de satisfacción es igual a 4 puntos)
-        - H₁: μ ≠ 4 (El nivel promedio de satisfacción es diferente de 4 puntos)
+        - H₀: μ₁ - μ₂ = 0 (No hay diferencia en la satisfacción media entre géneros)
+        - H₁: μ₁ - μ₂ ≠ 0 (Existe diferencia en la satisfacción media entre géneros)
         
-        **Tipo de Prueba:** Bilateral (nos interesa detectar diferencias en ambas direcciones)
+        **Tipo de Prueba:** Bilateral
         """)
         
-        # Cálculos con valores fijos
-        variable = 'Satisfaccion'
-        mu0 = 4  # Valor hipotético fijo
-        alpha = 0.05  # Nivel de significancia fijo
+        # Separar datos por género
+        grupo1 = df[df['Genero'] == 1]['Satisfaccion']
+        grupo2 = df[df['Genero'] == 2]['Satisfaccion']
         
-        # Estadísticos de la muestra
-        n = len(df[variable])
-        media_muestral = df[variable].mean()
-        s = df[variable].std()  # Desviación estándar muestral
-        gl = n - 1  # Grados de libertad
-        t_calc = (media_muestral - mu0) / (s / np.sqrt(n))
-        
-        # Valores críticos para prueba bilateral
-        t_crit = stats.t.ppf(1 - alpha/2, gl)
-        p_value = 2 * (1 - stats.t.cdf(abs(t_calc), gl))
-        
-        # Mostrar resultados
-        st.write("### Resultados")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write(f"""
-            **Datos:**
-            - Tamaño de muestra (n) = {n}
-            - Media muestral (x̄) = {media_muestral:.2f} puntos
-            - Valor a probar (μ₀) = {mu0:.2f} puntos
-            - Desviación estándar muestral (s) = {s:.2f}
-            - Grados de libertad (gl) = {gl}
-            - Nivel de significancia (α) = {alpha}
-            """)
-            
-        with col2:
-            st.write(f"""
-            **Estadísticos:**
-            - t calculado = {t_calc:.4f}
-            - t crítico = ±{t_crit:.4f}
-            - Valor p = {p_value:.4f}
-            """)
-        
-        # Fórmula del estadístico
-        st.write("### Fórmula del Estadístico de Prueba")
-        st.write("Como la varianza poblacional es desconocida y n ≤ 30, usamos la distribución t-Student:")
-        formula = r"t = \frac{\bar{x} - \mu_0}{s/\sqrt{n}}"
-        latex_copyable(formula, "t_media")
-        
-        # Resolución paso a paso
-        st.write("### Resolución")
-        st.write("**Paso 1: Identificar los valores**")
-        st.write(f"""
-        - Media muestral (x̄) = {media_muestral:.4f}
-        - Media hipotética (μ₀) = {mu0:.4f}
-        - Desviación estándar muestral (s) = {s:.4f}
-        - Tamaño de muestra (n) = {n}
-        - Grados de libertad (gl) = {gl}
-        """)
-        
-        st.write("**Paso 2: Sustituir en la fórmula**")
-        sustitucion = rf"t = \frac{{{media_muestral:.4f} - {mu0:.4f}}}{{{s:.4f}/\sqrt{{{n}}}}} = \frac{{{media_muestral-mu0:.4f}}}{{{s/np.sqrt(n):.4f}}} = {t_calc:.4f}"
-        latex_copyable(sustitucion, "t_media_calc")
-        
-        st.write("**Paso 3: Comparar con el valor crítico**")
-        st.write(f"""
-        |t| = |{t_calc:.4f}|
-        Valor crítico = ±{t_crit:.4f}
-        """)
-        
-        st.write("**Paso 4: Decisión e Interpretación**")
-        if p_value < alpha:
-            st.write(f"""
-            Como el p-valor ({p_value:.4f}) es menor que α ({alpha}), se rechaza H₀.
-            
-            **Interpretación:**  
-            Con un nivel de confianza del 95%, existe evidencia estadística suficiente para concluir que el nivel 
-            promedio de satisfacción en Aventura Park es diferente de 4 puntos. Específicamente, el nivel promedio 
-            de satisfacción observado es de {media_muestral:.2f} puntos, lo que sugiere que el centro recreativo 
-            {"no está alcanzando" if media_muestral < mu0 else "está superando"} el estándar establecido.
-            """)
+        # Verificar que hay suficientes datos en cada grupo
+        if len(grupo1) == 0 or len(grupo2) == 0:
+            st.error("Error: No hay suficientes datos en uno o ambos grupos.")
         else:
-            st.write(f"""
-            Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
+            # Calcular estadísticos
+            n1 = len(grupo1)
+            n2 = len(grupo2)
+            media1 = grupo1.mean()
+            media2 = grupo2.mean()
+            var1 = grupo1.var(ddof=1)
+            var2 = grupo2.var(ddof=1)
             
-            **Interpretación:**  
-            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que el nivel 
-            promedio de satisfacción en Aventura Park es diferente de 4 puntos. El nivel promedio observado de 
-            {media_muestral:.2f} puntos no es estadísticamente diferente del estándar establecido.
-            """)
-        
-        # Visualización
-        st.write("### Visualización")
-        
-        # Crear datos para la distribución t
-        x = np.linspace(stats.t.ppf(0.001, gl), stats.t.ppf(0.999, gl), 1000)
-        y = stats.t.pdf(x, gl)
-        
-        # Crear figura
-        fig = go.Figure()
-        
-        # Agregar la curva t
-        fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Distribución t-Student',
-                               line=dict(color='blue')))
-        
-        # Áreas de rechazo
-        # Área de rechazo izquierda
-        x_rej_izq = x[x <= -t_crit]
-        y_rej_izq = stats.t.pdf(x_rej_izq, gl)
-        fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
-                               fill='tozeroy', 
-                               name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
-                               line=dict(color='red', width=0)))
-        
-        # Área de rechazo derecha
-        x_rej_der = x[x >= t_crit]
-        y_rej_der = stats.t.pdf(x_rej_der, gl)
-        fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
-                               fill='tozeroy', 
-                               name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
-                               line=dict(color='red', width=0)))
-        
-        # Agregar línea vertical para t calculado
-        fig.add_vline(x=t_calc, 
-                     line_dash="dash", 
-                     line_color="green",
-                     annotation_text=f"t calc = {t_calc:.4f}",
-                     annotation_position="top")
-        
-        # Actualizar layout
-        fig.update_layout(
-            title='Prueba de Hipótesis para la Media de Satisfacción',
-            xaxis_title='Estadístico t',
-            yaxis_title='Densidad',
-            showlegend=True
-        )
-        
-        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_media_satisfaccion_2")
-        
+            # Verificar que las varianzas no son cero
+            if var1 == 0 and var2 == 0:
+                st.warning("Las varianzas de ambos grupos son cero. Esto significa que todos los valores son idénticos en cada grupo.")
+            else:
+                # Varianza combinada
+                sp2 = ((n1-1)*var1 + (n2-1)*var2)/(n1 + n2 - 2)
+                
+                # Verificar que la varianza combinada no es cero
+                if sp2 <= 0:
+                    st.error("Error: La varianza combinada es cero o negativa. No se puede realizar la prueba.")
+                else:
+                    sp = np.sqrt(sp2)
+                    
+                    # Estadístico t
+                    denominador = sp*np.sqrt(1/n1 + 1/n2)
+                    if denominador == 0:
+                        st.error("Error: No se puede calcular el estadístico t debido a una división por cero.")
+                    else:
+                        t_calc = (media1 - media2)/denominador
+                        gl = n1 + n2 - 2
+                        
+                        # Valores críticos
+                        alpha = 0.05
+                        t_crit = stats.t.ppf(1 - alpha/2, gl)
+                        p_value = 2 * (1 - stats.t.cdf(abs(t_calc), gl))
+                        
+                        # Mostrar resultados
+                        st.write("### Resultados")
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.write(f"""
+                            **Datos Grupo 1 (Masculino):**
+                            - Tamaño de muestra (n₁) = {n1}
+                            - Media muestral (x̄₁) = {media1:.2f}
+                            - Varianza muestral (s₁²) = {var1:.2f}
+                            
+                            **Datos Grupo 2 (Femenino):**
+                            - Tamaño de muestra (n₂) = {n2}
+                            - Media muestral (x̄₂) = {media2:.2f}
+                            - Varianza muestral (s₂²) = {var2:.2f}
+                            """)
+                            
+                        with col2:
+                            st.write(f"""
+                            **Estadísticos:**
+                            - Varianza combinada (sp²) = {sp2:.4f}
+                            - Grados de libertad (gl) = {gl}
+                            - t calculado = {t_calc:.4f}
+                            - t crítico = ±{t_crit:.4f}
+                            - Valor p = {p_value:.4f}
+                            """)
+                        
+                        # Fórmulas en LaTeX
+                        st.write("### Fórmulas Principales")
+                        
+                        st.write("**1. Varianza Combinada:**")
+                        formula_sp = r"s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1 + n_2 - 2}"
+                        latex_copyable(formula_sp, "sp2")
+                        
+                        st.write("**2. Estadístico t:**")
+                        formula_t = r"t = \frac{\bar{x}_1 - \bar{x}_2}{s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}}"
+                        latex_copyable(formula_t, "t_stat")
+                        
+                        st.write("**3. Grados de libertad:**")
+                        formula_gl = r"gl = n_1 + n_2 - 2"
+                        latex_copyable(formula_gl, "gl")
+                        
+                        # Resolución paso a paso
+                        st.write("### Resolución")
+                        
+                        st.write("**Paso 1: Calcular la varianza combinada**")
+                        formula_sp_calc = rf"s_p^2 = \frac{{({n1}-1){var1:.4f} + ({n2}-1){var2:.4f}}}{{{n1} + {n2} - 2}} = {sp2:.4f}"
+                        latex_copyable(formula_sp_calc, "sp2_calc")
+                        
+                        st.write("**Paso 2: Calcular el estadístico t**")
+                        formula_t_calc = rf"t = \frac{{{media1:.4f} - {media2:.4f}}}{{{sp:.4f}\sqrt{{\frac{{1}}{{{n1}}} + \frac{{1}}{{{n2}}}}}}} = {t_calc:.4f}"
+                        latex_copyable(formula_t_calc, "t_calc")
+                        
+                        st.write("**Paso 3: Decisión e Interpretación**")
+                        if p_value < alpha:
+                            st.write(f"""
+                            Como el p-valor ({p_value:.4f}) es menor que α ({alpha}), se rechaza H₀.
+                            
+                            **Interpretación:**  
+                            Con un nivel de confianza del 95%, existe evidencia estadística suficiente para concluir que hay una 
+                            diferencia significativa en los niveles de satisfacción entre visitantes masculinos y femeninos. 
+                            La diferencia observada es de {media1 - media2:.2f} puntos.
+                            """)
+                        else:
+                            st.write(f"""
+                            Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
+                            
+                            **Interpretación:**  
+                            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay una 
+                            diferencia significativa en los niveles de satisfacción entre visitantes masculinos y femeninos.
+                            """)
+                        
+                        # Visualización
+                        st.write("### Visualización")
+                        
+                        # Crear datos para la distribución t
+                        x = np.linspace(stats.t.ppf(0.001, gl), stats.t.ppf(0.999, gl), 1000)
+                        y = stats.t.pdf(x, gl)
+                        
+                        # Crear figura
+                        fig = go.Figure()
+                        
+                        # Agregar la curva t
+                        fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Distribución t-Student',
+                                               line=dict(color='blue')))
+                        
+                        # Áreas de rechazo
+                        # Área de rechazo izquierda
+                        x_rej_izq = x[x <= -t_crit]
+                        y_rej_izq = stats.t.pdf(x_rej_izq, gl)
+                        fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
+                                               fill='tozeroy', 
+                                               name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
+                                               line=dict(color='red', width=0)))
+                        
+                        # Área de rechazo derecha
+                        x_rej_der = x[x >= t_crit]
+                        y_rej_der = stats.t.pdf(x_rej_der, gl)
+                        fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
+                                               fill='tozeroy', 
+                                               name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
+                                               line=dict(color='red', width=0)))
+                        
+                        # Agregar línea vertical para t calculado
+                        fig.add_vline(x=t_calc, 
+                                     line_dash="dash", 
+                                     line_color="green",
+                                     annotation_text=f"t calc = {t_calc:.4f}",
+                                     annotation_position="top")
+                        
+                        # Actualizar layout
+                        fig.update_layout(
+                            title='Prueba de Hipótesis para Diferencia de Medias',
+                            xaxis_title='Estadístico t',
+                            yaxis_title='Densidad',
+                            showlegend=True
+                        )
+                        
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        # Añadir boxplot para visualizar distribución por género
+                        fig_box = go.Figure()
+                        
+                        fig_box.add_trace(go.Box(y=grupo1, name='Masculino',
+                                                boxpoints='all', jitter=0.3, pointpos=-1.8))
+                        fig_box.add_trace(go.Box(y=grupo2, name='Femenino',
+                                                boxpoints='all', jitter=0.3, pointpos=-1.8))
+                        
+                        fig_box.update_layout(
+                            title='Distribución de Satisfacción por Género',
+                            yaxis_title='Nivel de Satisfacción',
+                            showlegend=True
+                        )
+                        
+                        st.plotly_chart(fig_box, use_container_width=True)
+                        
     # 1.5 Diferencia de medias con varianza desconocida diferentes
     with pruebas_tabs[4]:
-        st.write("## 1.5 Prueba de Hipótesis para la Diferencia de Medias (σ² desconocida diferentes)")
+        st.write("## 1.5 Prueba de Hipótesis para la Diferencia de Medias (σ² desconocidas diferentes)")
         
         st.write("""
         ### Ejemplo: Satisfacción por Género
         
         **Contexto del Problema:**  
-        Se realizó una encuesta para determinar si existe diferencia en la satisfacción entre hombres y mujeres 
-        en el centro recreativo, suponiendo que las poblaciones son normales pero con varianzas diferentes.
-        """)
-
-        # Cálculos con nuestros datos
-        grupo1 = df[df['Genero'] == 1]['Satisfaccion']  # Hombres
-        grupo2 = df[df['Genero'] == 2]['Satisfaccion']  # Mujeres
+        El administrador de Aventura Park desea investigar si existe una diferencia significativa en los niveles 
+        de satisfacción entre visitantes masculinos y femeninos, sin asumir que las varianzas son iguales.
         
-        n1 = len(grupo1)
-        n2 = len(grupo2)
-        x1 = grupo1.mean()
-        x2 = grupo2.mean()
-        s1_2 = grupo1.var()  # varianza grupo 1
-        s2_2 = grupo2.var()  # varianza grupo 2
-        alpha = 0.05  # Cambiado de 0.1 a 0.05
+        **Planteamiento:**
+        - Variable de estudio: Nivel de satisfacción de los visitantes por género
+        - Hipótesis nula (H₀): No hay diferencia en la satisfacción media entre géneros
+        - Nivel de significancia (α): 0.05
         
-        st.write(f"""
-        **Datos:**
-        Grupo 1: Hombres
-        - n₁ = {n1}
-        - x̄₁ = {x1:.2f}
-        - s₁² = {s1_2:.2f}
-
-        Grupo 2: Mujeres
-        - n₂ = {n2}
-        - x̄₂ = {x2:.2f}
-        - s₂² = {s2_2:.2f}
-        """)
-
-        st.write("""
-        **Hipótesis:**
-        - H₀: μ₁ = μ₂ (La satisfacción promedio es igual entre hombres y mujeres)
-        - H₁: μ₁ ≠ μ₂ (La satisfacción promedio es diferente entre hombres y mujeres)
-        """)
-
-        # Paso 3: Estadístico de prueba
-        t_calc = (x1 - x2) / np.sqrt(s1_2/n1 + s2_2/n2)
+        **Hipótesis:**  
+        - H₀: μ₁ - μ₂ = 0 (No hay diferencia en la satisfacción media entre géneros)
+        - H₁: μ₁ - μ₂ ≠ 0 (Existe diferencia en la satisfacción media entre géneros)
         
-        # Paso 6: Grados de libertad (Welch-Satterthwaite)
-        v = ((s1_2/n1 + s2_2/n2)**2) / (((s1_2/n1)**2)/(n1-1) + ((s2_2/n2)**2)/(n2-1))
-        gl = int(np.floor(v))
-
-        # Paso 4: Valor crítico
-        t_crit = stats.t.ppf(1 - alpha/2, gl)
-
-        # P-valor
-        p_value = 2 * (1 - stats.t.cdf(abs(t_calc), gl))
-
-        # Mostrar resultados paso a paso
-        st.write("### Resolución")
-        
-        st.write("**Paso 1: Plantear Hipótesis**")
-        st.write("H₀: μ₁ = μ₂ vs H₁: μ₁ ≠ μ₂")
-        
-        st.write("**Paso 2: Nivel de Significancia**")
-        st.write(f"α = {alpha} (5%)")
-        
-        # Calcular las diferencias y los signos para la primera prueba
-        diferencias_primera = df['Satisfaccion'] - df['Importancia_Costo']
-        signos_primera = np.sign(diferencias_primera)
-        n_pos_primera = np.sum(signos_primera > 0)
-        n_neg_primera = np.sum(signos_primera < 0)
-        n_ceros_primera = np.sum(signos_primera == 0)
-        n_efectivo = len(signos_primera) - n_ceros_primera
-        
-        # Calcular probabilidad binomial
-        r = min(n_pos_primera, n_neg_primera) if n_efectivo > 0 else 0
-        p_value = 2 * stats.binom.cdf(r, n_efectivo, 0.5) if n_efectivo > 0 else 1.0
-        
-        st.write(f"""
-        **Paso 3: Cálculo del P-valor**
-        - r (mínimo entre n⁺ y n⁻) = {r}
-        - n efectivo = {n_efectivo}
-        - P-valor = {p_value:.4f}
+        **Tipo de Prueba:** Bilateral
         """)
         
-        st.write("### Conclusión")
-        if p_value < alpha:
-            st.write(f"""
-            Con un nivel de significancia del 5%, existe suficiente evidencia estadística para rechazar 
-            la hipótesis nula. Por lo tanto, podemos concluir que sí existe una diferencia significativa 
-            entre la satisfacción de los visitantes y la importancia que le dan al costo.
-            """)
+        # Separar datos por género
+        grupo1 = df[df['Genero'] == 1]['Satisfaccion']  # Masculino (1)
+        grupo2 = df[df['Genero'] == 2]['Satisfaccion']  # Femenino (2)
+        
+        # Verificar que hay suficientes datos en cada grupo
+        if len(grupo1) == 0 or len(grupo2) == 0:
+            st.error("Error: No hay suficientes datos en uno o ambos grupos.")
         else:
-            st.write(f"""
-            Con un nivel de significancia del 5%, no existe suficiente evidencia estadística para rechazar 
-            la hipótesis nula. Por lo tanto, no podemos concluir que exista una diferencia significativa 
-            entre la satisfacción de los visitantes y la importancia que le dan al costo.
-            """)
-
-        # Visualización
-        st.write("### Visualización")
-        
-        # Crear datos para la distribución t
-        x = np.linspace(stats.t.ppf(0.001, gl), stats.t.ppf(0.999, gl), 1000)
-        y = stats.t.pdf(x, gl)
-        
-        # Crear figura
-        fig = go.Figure()
-        
-        # Agregar la curva t
-        fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Distribución t-Student',
-                               line=dict(color='blue')))
-        
-        # Áreas de rechazo
-        # Área de rechazo izquierda
-        x_rej_izq = x[x <= -t_crit]
-        y_rej_izq = stats.t.pdf(x_rej_izq, gl)
-        fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
-                               fill='tozeroy', 
-                               name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
-                               line=dict(color='red', width=0)))
-        
-        # Área de rechazo derecha
-        x_rej_der = x[x >= t_crit]
-        y_rej_der = stats.t.pdf(x_rej_der, gl)
-        fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
-                               fill='tozeroy', 
-                               name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
-                               line=dict(color='red', width=0)))
-        
-        # Agregar línea vertical para t calculado
-        fig.add_vline(x=t_calc, 
-                     line_dash="dash", 
-                     line_color="green",
-                     annotation_text=f"t calc = {t_calc:.4f}",
-                     annotation_position="top")
-        
-        # Actualizar layout
-        fig.update_layout(
-            title='Prueba de Hipótesis para la Diferencia de Medias (Varianzas Diferentes)',
-            xaxis_title='Estadístico t',
-            yaxis_title='Densidad',
-            showlegend=True
-        )
-        
-        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_diferencia_medias_varianzas_diferentes")
-        
+            # Calcular estadísticos
+            n1 = len(grupo1)
+            n2 = len(grupo2)
+            media1 = grupo1.mean()
+            media2 = grupo2.mean()
+            var1 = grupo1.var(ddof=1)
+            var2 = grupo2.var(ddof=1)
+            
+            # Verificar que las varianzas no son cero
+            if var1 == 0 and var2 == 0:
+                st.warning("Las varianzas de ambos grupos son cero. Esto significa que todos los valores son idénticos en cada grupo.")
+            else:
+                # Calcular el estadístico t'
+                denominador = np.sqrt(var1/n1 + var2/n2)
+                if denominador == 0:
+                    st.error("Error: No se puede calcular el estadístico t debido a una división por cero.")
+                else:
+                    t_calc = (media1 - media2)/denominador
+                    
+                    # Grados de libertad de Welch-Satterthwaite
+                    num = (var1/n1 + var2/n2)**2
+                    den = (var1/n1)**2/(n1-1) + (var2/n2)**2/(n2-1)
+                    gl = num/den
+                    
+                    # Valores críticos
+                    alpha = 0.05
+                    t_crit = stats.t.ppf(1 - alpha/2, gl)
+                    p_value = 2 * (1 - stats.t.cdf(abs(t_calc), gl))
+                    
+                    # Mostrar resultados
+                    st.write("### Resultados")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write(f"""
+                        **Grupo 1 (Masculino):**
+                        - Tamaño de muestra (n₁) = {n1}
+                        - Media muestral (x̄₁) = {media1:.2f}
+                        - Varianza muestral (s₁²) = {var1:.2f}
+                        
+                        **Grupo 2 (Femenino):**
+                        - Tamaño de muestra (n₂) = {n2}
+                        - Media muestral (x̄₂) = {media2:.2f}
+                        - Varianza muestral (s₂²) = {var2:.2f}
+                        """)
+                        
+                    with col2:
+                        st.write(f"""
+                        **Estadísticos:**
+                        - Grados de libertad (ν) = {gl:.2f}
+                        - t' calculado = {t_calc:.4f}
+                        - t' crítico = ±{t_crit:.4f}
+                        - Valor p = {p_value:.4f}
+                        """)
+                    
+                    # Fórmulas en LaTeX
+                    st.write("### Fórmulas")
+                    
+                    st.write("**1. Estadístico de Prueba T':**")
+                    formula_t = r"T_{cal} = \frac{\bar{X}_1 - \bar{X}_2 - (\mu_1 - \mu_2)_{hip}}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}"
+                    latex_copyable(formula_t, "t_welch")
+                    
+                    st.write("**2. Grados de libertad (Welch-Satterthwaite):**")
+                    formula_gl = r"\nu = \frac{(\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2})^2}{\frac{(s_1^2/n_1)^2}{n_1-1} + \frac{(s_2^2/n_2)^2}{n_2-1}}"
+                    latex_copyable(formula_gl, "gl_welch")
+                    
+                    st.write("**3. Región de Rechazo:**")
+                    formula_rr = r"|T_{cal}| > t_{\alpha/2,\nu}"
+                    latex_copyable(formula_rr, "rr_welch")
+                    
+                    st.write("**4. Valor p:**")
+                    formula_p = r"p = 2(1 - F_{t,\nu}(|T_{cal}|))"
+                    latex_copyable(formula_p, "p_welch")
+                    
+                    st.write("**Paso 1: Calcular el estadístico T**")
+                    formula_t_calc = rf"T_{{cal}} = \frac{{{media1:.4f} - {media2:.4f} - 0}}{{\sqrt{{\frac{{{var1:.4f}}}{{{n1}}} + \frac{{{var2:.4f}}}{{{n2}}}}}}} = {t_calc:.4f}"
+                    latex_copyable(formula_t_calc, "t_welch_calc")
+                    
+                    st.write("**Paso 2: Calcular los grados de libertad**")
+                    formula_gl_calc = rf"\nu = \frac{{(\frac{{{var1:.4f}}}{{{n1}}} + \frac{{{var2:.4f}}}{{{n2}}})^2}}{{\frac{{({var1:.4f}/{n1})^2}}{{{n1}-1}} + \frac{{({var2:.4f}/{n2})^2}}{{{n2}-1}}}} = {gl:.2f}"
+                    latex_copyable(formula_gl_calc, "gl_welch_calc")
+                    
+                    st.write("**Paso 3: Decisión e Interpretación**")
+                    if p_value < alpha:
+                        st.write(f"""
+                        Como el p-valor ({p_value:.4f}) es menor que α ({alpha}), se rechaza H₀.
+                        
+                        **Interpretación:**  
+                        Con un nivel de confianza del 95%, existe evidencia estadística suficiente para concluir que hay 
+                        una diferencia significativa en los niveles de satisfacción entre visitantes masculinos y femeninos. 
+                        La diferencia observada es de {media1 - media2:.2f} puntos.
+                        """)
+                    else:
+                        st.write(f"""
+                        Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
+                        
+                        **Interpretación:**  
+                        Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay una 
+                        diferencia significativa en los niveles de satisfacción entre visitantes masculinos y femeninos.
+                        """)
+                    
+                    # Visualización
+                    st.write("### Visualización")
+                    
+                    # Crear datos para la distribución t
+                    x = np.linspace(stats.t.ppf(0.001, gl), stats.t.ppf(0.999, gl), 1000)
+                    y = stats.t.pdf(x, gl)
+                    
+                    # Crear figura
+                    fig = go.Figure()
+                    
+                    # Agregar la curva t
+                    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Distribución t-Student',
+                                           line=dict(color='blue')))
+                    
+                    # Áreas de rechazo
+                    # Área de rechazo izquierda
+                    x_rej_izq = x[x <= -t_crit]
+                    y_rej_izq = stats.t.pdf(x_rej_izq, gl)
+                    fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
+                                           fill='tozeroy', 
+                                           name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
+                                           line=dict(color='red', width=0)))
+                    
+                    # Área de rechazo derecha
+                    x_rej_der = x[x >= t_crit]
+                    y_rej_der = stats.t.pdf(x_rej_der, gl)
+                    fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
+                                           fill='tozeroy', 
+                                           name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
+                                           line=dict(color='red', width=0)))
+                    
+                    # Agregar línea vertical para t calculado
+                    fig.add_vline(x=t_calc, 
+                                 line_dash="dash", 
+                                 line_color="green",
+                                 annotation_text=f"t' calc = {t_calc:.4f}",
+                                 annotation_position="top")
+                    
+                    # Actualizar layout
+                    fig.update_layout(
+                        title='Prueba de Hipótesis para Diferencia de Medias (Welch)',
+                        xaxis_title='Estadístico t\'',
+                        yaxis_title='Densidad',
+                        showlegend=True
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Añadir boxplot para visualizar distribución por género
+                    fig_box = go.Figure()
+                    
+                    fig_box.add_trace(go.Box(y=grupo1, name='Masculino',
+                                            boxpoints='all', jitter=0.3, pointpos=-1.8))
+                    fig_box.add_trace(go.Box(y=grupo2, name='Femenino',
+                                            boxpoints='all', jitter=0.3, pointpos=-1.8))
+                    
+                    fig_box.update_layout(
+                        title='Distribución de Satisfacción por Género',
+                        yaxis_title='Nivel de Satisfacción',
+                        showlegend=True
+                    )
+                    
+                    st.plotly_chart(fig_box, use_container_width=True)
+                    
     # 1.6 Proporción
     with pruebas_tabs[5]:
         st.write("## 1.6 Prueba de Hipótesis para una Proporción")
@@ -911,71 +1002,148 @@ with main_tabs[0]:
         st.write("""
         ### Ejemplo: Proporción de Visitantes Satisfechos
         
-        **Contexto del Problema:**  
-        El centro recreativo desea evaluar si la proporción de visitantes satisfechos 
-        (aquellos que calificaron su satisfacción como 4 o 5) es mayor al 70%.
+        Queremos probar si la proporción de visitantes satisfechos (calificación ≥ 4) es igual a 75%.
         
-        **Planteamiento:**
-        - Variable de estudio: Satisfacción (4 o 5 = Satisfecho)
-        - Tamaño de muestra: 30 visitantes
-        - Nivel de significancia (α): 0.05
+        **Hipótesis:**
+        
+        H₀: π = 0.75  
+        H₁: π ≠ 0.75
         """)
         
-        # Cálculos
-        n = len(df)
-        satisfechos = len(df[df['Satisfaccion'] >= 4])
-        p_muestra = satisfechos / n
-        p0 = 0.70  # Proporción hipotética
-        alpha = 0.05
+        # Mostrar hipótesis en LaTeX
+        latex_copyable(r"H_0: \pi = 0.75", "h0_prop")
+        latex_copyable(r"H_1: \pi \neq 0.75", "h1_prop")
         
-        # Estadístico de prueba
-        z_calc = (p_muestra - p0) / np.sqrt(p0 * (1 - p0) / n)
+        st.write("**Nivel de significancia:** α = 0.05")
         
-        # Valor crítico
-        z_crit = stats.norm.ppf(1 - alpha)  # Prueba unilateral derecha
+        # Calcular proporción muestral
+        satisfechos = df[df['Satisfaccion'] >= 4].shape[0]
+        total = df.shape[0]
         
-        # P-valor
-        p_value = 1 - stats.norm.cdf(z_calc)
+        # Mostrar datos
+        st.write("""### Datos Muestrales""")
+        st.write(f"""
+        - Total de visitantes (n): {total}
+        - Visitantes satisfechos (x): {satisfechos}
+        - Proporción muestral (p̂): {satisfechos/total:.4f}
+        - Proporción hipotética (π₀): 0.75
+        """)
         
-        # Visualización
-        st.write("### Visualización")
-        
-        # Crear datos para la distribución normal
-        x = np.linspace(stats.norm.ppf(0.001), stats.norm.ppf(0.999), 1000)
-        y = stats.norm.pdf(x)
-        
-        # Crear figura
-        fig = go.Figure()
-        
-        # Agregar la curva normal
-        fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Distribución Normal',
-                               line=dict(color='blue')))
-        
-        # Área de rechazo (cola derecha)
-        x_rej = x[x >= z_crit]
-        y_rej = stats.norm.pdf(x_rej)
-        fig.add_trace(go.Scatter(x=x_rej, y=y_rej, 
-                               fill='tozeroy', 
-                               name=f'Región de Rechazo (α = {alpha:.3f})',
-                               line=dict(color='red', width=0)))
-        
-        # Agregar línea vertical para z calculado
-        fig.add_vline(x=z_calc, 
-                     line_dash="dash", 
-                     line_color="green",
-                     annotation_text=f"z calc = {z_calc:.4f}",
-                     annotation_position="top")
-        
-        # Actualizar layout
-        fig.update_layout(
-            title='Prueba de Hipótesis para la Proporción de Visitantes Satisfechos',
-            xaxis_title='Estadístico Z',
-            yaxis_title='Densidad',
-            showlegend=True
-        )
-        
-        st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_proporcion")
-        
+        if total == 0:
+            st.error("Error: No hay datos suficientes.")
+        else:
+            # Calcular estadísticos
+            p_hat = satisfechos/total
+            pi_0 = 0.75
+            
+            # Estadístico Z
+            denominador = np.sqrt(pi_0*(1-pi_0)/total)
+            if denominador == 0:
+                st.error("Error: No se puede calcular el estadístico Z debido a una división por cero.")
+            else:
+                z_calc = (p_hat - pi_0)/denominador
+                
+                # Valores críticos
+                alpha = 0.05
+                z_crit = stats.norm.ppf(1 - alpha/2)
+                p_value = 2 * (1 - stats.norm.cdf(abs(z_calc)))
+                
+                st.write("### Paso 1: Verificar condiciones")
+                st.write("""
+                Para usar la aproximación normal, se deben cumplir:
+                """)
+                latex_copyable(r"n\pi_0 \geq 5 \quad \text{y} \quad n(1-\pi_0) \geq 5", "condicion_normal")
+                
+                st.write(f"""
+                - n·π₀ = {total*pi_0:.1f} ≥ 5 ({'✓' if total*pi_0 >= 5 else '✗'})
+                - n·(1-π₀) = {total*(1-pi_0):.1f} ≥ 5 ({'✓' if total*(1-pi_0) >= 5 else '✗'})
+                """)
+                
+                st.write("**Paso 2: Estadístico de prueba**")
+                st.write("El estadístico de prueba es:")
+                latex_copyable(r"Z_c = \frac{\hat{p} - \pi_0}{\sqrt{\frac{\pi_0(1-\pi_0)}{n}}}", "z_prueba")
+                
+                st.write("Sustituyendo los valores:")
+                latex_copyable(rf"Z_c = \frac{{{p_hat:.4f} - {pi_0:.4f}}}{{\sqrt{{\frac{{{pi_0:.4f}(1-{pi_0:.4f})}}{{{total}}}}}}} = {z_calc:.4f}", "z_prueba_calc")
+                
+                st.write("**Paso 3: Región crítica**")
+                st.write("Para una prueba bilateral con α = 0.05:")
+                latex_copyable(rf"Z_{{\alpha/2}} = \pm {z_crit:.4f}", "z_critico")
+                
+                st.write("La región de rechazo es:")
+                latex_copyable(rf"|Z_c| > Z_{{\alpha/2}} = {z_crit:.4f}", "region_rechazo")
+                
+                st.write("**Paso 4: Regla de decisión**")
+                latex_copyable(r"\text{Rechazar } H_0 \text{ si } |Z_c| > Z_{\alpha/2}", "regla_decision")
+                
+                # Visualización
+                st.write("### Visualización")
+                
+                # Crear datos para la distribución normal
+                x = np.linspace(-4, 4, 1000)
+                y = stats.norm.pdf(x)
+                
+                # Crear figura
+                fig = go.Figure()
+                
+                # Agregar la curva normal
+                fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Distribución Normal',
+                                       line=dict(color='blue')))
+                
+                # Áreas de rechazo
+                # Área de rechazo derecha
+                x_rej_der = x[x >= z_crit]
+                y_rej_der = stats.norm.pdf(x_rej_der)
+                fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
+                                       fill='tozeroy', 
+                                       name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
+                                       line=dict(color='red', width=0)))
+                
+                x_rej_izq = x[x <= -z_crit]
+                y_rej_izq = stats.norm.pdf(x_rej_izq)
+                fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
+                                       fill='tozeroy', 
+                                       name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
+                                       line=dict(color='red', width=0)))
+                
+                # Agregar línea vertical para el valor calculado
+                fig.add_vline(x=z_calc, 
+                            line_dash="dash", 
+                            line_color="green",
+                            annotation_text=f"Z calc = {z_calc:.4f}",
+                            annotation_position="top")
+                
+                # Actualizar layout
+                fig.update_layout(
+                    title='Distribución Normal Estándar',
+                    xaxis_title='Z',
+                    yaxis_title='Densidad',
+                    showlegend=True
+                )
+                
+                st.plotly_chart(fig)
+                
+                # Conclusión
+                st.write("### Paso 5: Conclusión")
+                if abs(z_calc) > z_crit:
+                    st.write(f"""
+                    Como |Z_c| = {abs(z_calc):.4f} > {z_crit:.4f}, se rechaza H₀.
+                    
+                    **Interpretación:**  
+                    Con un nivel de confianza del 95%, hay evidencia suficiente para concluir que la proporción
+                    de visitantes satisfechos es diferente del 75%.
+                    """)
+                else:
+                    st.write(f"""
+                    Como |Z_c| = {abs(z_calc):.4f} < {z_crit:.4f}, no se rechaza H₀.
+                    
+                    **Interpretación:**  
+                    Con un nivel de confianza del 95%, no hay evidencia suficiente para concluir que la proporción
+                    de visitantes satisfechos es diferente del 75%.
+                    """)
+                
+                st.write(f"p-valor = {p_value:.4f}")
+                
     # 1.7 Diferencia de Proporciones
     with pruebas_tabs[6]:
         st.write("## 1.7 Prueba de Hipótesis para la Diferencia de Proporciones")
@@ -1025,12 +1193,12 @@ with main_tabs[0]:
             st.write(f"""
             **Grupo 1 (Hombres):**
             - Tamaño de muestra (n₁) = {n1}
-            - Satisfechos = {satisfechos_h}
+            - Satisfechos (x₁) = {satisfechos_h}
             - Proporción (p₁) = {p1:.4f}
             
             **Grupo 2 (Mujeres):**
             - Tamaño de muestra (n₂) = {n2}
-            - Satisfechos = {satisfechos_m}
+            - Satisfechas (x₂) = {satisfechos_m}
             - Proporción (p₂) = {p2:.4f}
             """)
             
@@ -1042,6 +1210,22 @@ with main_tabs[0]:
             - Valor p = {p_value:.4f}
             - Proporción combinada = {p_comb:.4f}
             """)
+        
+        # Fórmula del estadístico
+        st.write("### Fórmula del Estadístico de Prueba")
+        st.write("El estadístico de prueba es:")
+        formula = r"Z_{cal} = \frac{p_1 - p_2 - (\pi_1 - \pi_2)}{\sqrt{\hat{p}(1-\hat{p})(\frac{1}{n_1} + \frac{1}{n_2})}}"
+        latex_copyable(formula, "z_dif_prop")
+        
+        st.write("Donde la proporción combinada p̂ se calcula como:")
+        formula = rf"\hat{{p}} = \frac{{x_1 + x_2}}{{n_1 + n_2}} = \frac{{{satisfechos_h} + {satisfechos_m}}}{{{n1} + {n2}}} = {p_comb:.4f}"
+        latex_copyable(formula, "p_comb")
+
+        st.write("Sustituyendo los valores:")
+        numerador = f"{p1:.4f} - {p2:.4f}"
+        denominador = f"{p_comb:.4f}(1-{p_comb:.4f})"
+        formula = rf"Z_{{cal}} = \frac{{{numerador}}}{{\sqrt{{{denominador}}} \cdot \sqrt{{\frac{{1}}{{{n1}}} + \frac{{1}}{{{n2}}}}}}} = {z_calc:.4f}"
+        latex_copyable(formula, "z_dif_prop_calc")
         
         # Visualización
         st.write("### Visualización")
@@ -1098,8 +1282,8 @@ with main_tabs[0]:
             Como el p-valor ({p_value:.4f}) es menor que α ({alpha}), se rechaza H₀.
             
             **Conclusión:**  
-            Con un nivel de confianza del 95%, existe evidencia estadística suficiente para concluir que 
-            hay una diferencia significativa en la proporción de visitantes satisfechos entre hombres y mujeres. 
+            Con un nivel de confianza del 95%, existe evidencia estadística suficiente para concluir que hay una 
+            diferencia significativa en la proporción de visitantes satisfechos entre hombres y mujeres. 
             La diferencia observada de {abs(p1 - p2):.1%} puntos porcentuales es estadísticamente significativa.
             """)
         else:
@@ -1107,8 +1291,8 @@ with main_tabs[0]:
             Como el p-valor ({p_value:.4f}) es mayor que α ({alpha}), no se rechaza H₀.
             
             **Conclusión:**  
-            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay 
-            una diferencia significativa en la proporción de visitantes satisfechos entre hombres y mujeres. 
+            Con un nivel de confianza del 95%, no existe evidencia estadística suficiente para concluir que hay una 
+            diferencia significativa en la proporción de visitantes satisfechos entre hombres y mujeres. 
             La diferencia observada de {abs(p1 - p2):.1%} puntos porcentuales no es estadísticamente significativa.
             """)
 
@@ -1183,6 +1367,55 @@ with main_tabs[0]:
         
         st.plotly_chart(fig, use_container_width=True, key="plot_hipotesis_varianza")
         
+        st.write("### Fórmulas")
+        st.write("**1. Estadístico de Prueba:**")
+        formula = r"\chi_{cal}^2 = \frac{(n-1)S^2}{\sigma_{Hip}^2}"
+        latex_copyable(formula, "chi_var")
+
+        st.write("Donde:")
+        st.write("""
+        - n es el tamaño de la muestra
+        - S² es la varianza muestral
+        - σ²ₕᵢₚ es la varianza poblacional bajo la hipótesis nula
+        """)
+
+        st.write("**2. Grados de libertad:**")
+        st.latex(r"\nu = n - 1")
+
+        st.write("### Paso 1: Calcular el estadístico de prueba")
+        formula_calc = rf"\chi_{{cal}}^2 = \frac{{({n}-1) \cdot {s2:.4f}}}{{{sigma2_0}}} = {chi2_calc:.4f}"
+        latex_copyable(formula_calc, "chi_var_calc")
+        
+        st.write("**Paso 2: Decisión")
+        decision = p_value < alpha
+        st.write("### Paso 4: Decisión")
+        if decision:
+            st.write(f"""
+            Como el estadístico calculado χ²cal = {chi2_calc:.4f} > χ²crit = {chi2_crit:.4f},
+            se rechaza la hipótesis nula.
+            
+            **Interpretación:**  
+            Con un nivel de confianza del {(1-alpha)*100}%, existe evidencia estadística suficiente para concluir que 
+            la varianza poblacional es mayor que {sigma2_0} unidades cuadradas.
+            
+            **Conclusión:**  
+            La variabilidad en los datos es significativamente mayor que lo establecido en la hipótesis nula ({sigma2_0} unidades cuadradas), 
+            con una varianza muestral de {s2:.4f} unidades cuadradas.
+            """)
+        else:
+            st.write(f"""
+            Como el estadístico calculado χ²cal = {chi2_calc:.4f} ≤ χ²crit = {chi2_crit:.4f},
+            no se rechaza la hipótesis nula.
+            
+            **Interpretación:**  
+            Con un nivel de confianza del {(1-alpha)*100}%, no existe evidencia estadística suficiente para concluir que 
+            la varianza poblacional es mayor que {sigma2_0} unidades cuadradas.
+            
+            **Conclusión:**  
+            La variabilidad observada en los datos (varianza muestral = {s2:.4f} unidades cuadradas) no es 
+            significativamente mayor que lo establecido en la hipótesis nula ({sigma2_0} unidades cuadradas).
+            """)
+
 # Prueba de Signos: Importancia del Costo vs Preferencia
 st.markdown("### Prueba de Signos: Importancia del Costo vs Preferencia")
 
@@ -1242,7 +1475,7 @@ with main_tabs[1]:
         n_pos = sum(datos['Signo'] == '+')
         n_neg = sum(datos['Signo'] == '-')
         n_ceros = sum(datos['Signo'] == '0')
-        n_efectivo = n_total - n_ceros  # excluyendo empates
+        n_efectivo = len(datos) - n_ceros  # excluyendo empates
         
         st.write(f"""
         **Resumen de Signos:**
@@ -1313,16 +1546,17 @@ with main_tabs[1]:
                                line=dict(color='blue')))
         
         # Áreas de rechazo
-        x_rej_izq = x[x <= -z_crit]
-        y_rej_izq = stats.norm.pdf(x_rej_izq)
-        fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
+        # Área de rechazo derecha
+        x_rej_der = x[x >= z_crit]
+        y_rej_der = stats.norm.pdf(x_rej_der)
+        fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
                                fill='tozeroy', 
                                name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
                                line=dict(color='red', width=0)))
         
-        x_rej_der = x[x >= z_crit]
-        y_rej_der = stats.norm.pdf(x_rej_der)
-        fig.add_trace(go.Scatter(x=x_rej_der, y=y_rej_der, 
+        x_rej_izq = x[x <= -z_crit]
+        y_rej_izq = stats.norm.pdf(x_rej_izq)
+        fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
                                fill='tozeroy', 
                                name=f'Región de Rechazo (α/2 = {alpha/2:.3f})',
                                line=dict(color='red', width=0)))
@@ -1400,7 +1634,7 @@ with main_tabs[1]:
         # Valores críticos y p-valor (prueba bilateral)
         alpha = 0.05
         z_crit = stats.norm.ppf(1 - alpha/2)
-        p_value = 2 * (1 - stats.norm.cdf(abs(z_calc)))
+        p_value = 2 * (1 - stats.norm.cdf(abs(z_calc), n - 1))
         
         st.write("""
         ### Prueba de Hipótesis
@@ -1437,6 +1671,7 @@ with main_tabs[1]:
                                line=dict(color='blue')))
         
         # Áreas de rechazo
+        # Área de rechazo izquierda
         x_rej_izq = x[x <= -z_crit]
         y_rej_izq = stats.norm.pdf(x_rej_izq)
         fig.add_trace(go.Scatter(x=x_rej_izq, y=y_rej_izq, 
