@@ -1,0 +1,31 @@
+Participante,Edad,Género,Ubicación del Centro,Frecuencia de Visitas,Actividades,Compañía,Residencia,Preferencia,Época del Año de Visita Frecuente,Importancia del Costo de Entrada,Satisfacción
+1,39,Masculino,Dentro de mi localidad,1 vez,Mas de 5 actividades,Mas de 5 personas,Misma localidad,5,Primavera,Importante,Muy satisfecho
+2,20,Masculino,Dentro de mi localidad,2-3 veces,2 a 3 actividades,Solo,Localidades cercanas,5,Otoño,Muy importante,Muy satisfecho
+3,23,Femenino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Misma localidad,3,Primavera,Importante,Satisfecho
+4,38,Masculino,Dentro de mi localidad,1 vez,Mas de 5 actividades,Mas de 5 personas,Misma localidad,5,Verano,Importante,Muy satisfecho
+5,20,Femenino,Dentro de mi localidad,1 vez,1 actividad,Solo,Otras ciudades,3,Otoño,Poco importante,Insatisfecho
+6,21,Masculino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Localidades cercanas,3,Primavera,Importante,Satisfecho
+7,41,Femenino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Localidades cercanas,4,Verano,Importante,Satisfecho
+8,20,Femenino,Dentro de mi localidad,4-5 veces,2 a 3 actividades,2 a 3 personas,Localidades cercanas,3,Verano,Muy importante,Satisfecho
+9,25,Femenino,Dentro de mi localidad,2-3 veces,2 a 3 actividades,4 a 5 personas,Misma localidad,3,Primavera,Importante,Satisfecho
+10,39,Femenino,Dentro de mi localidad,4-5 veces,Mas de 5 actividades,4 a 5 personas,Misma localidad,5,Primavera,Muy importante,Muy satisfecho
+11,21,Femenino,Dentro de mi localidad,1 vez,2 a 3 actividades,4 a 5 personas,Misma localidad,3,Verano,Importante,Satisfecho
+12,23,Masculino,Dentro de mi localidad,4-5 veces,2 a 3 actividades,Mas de 5 personas,Misma localidad,4,Otoño,Importante,Satisfecho
+13,38,Masculino,Dentro de mi localidad,Mas de 5 veces,1 actividad,Mas de 5 personas,Misma localidad,3,Invierno,Importante,Satisfecho
+14,20,Masculino,Fuera de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Misma localidad,5,Verano,Importante,Satisfecho
+15,23,Femenino,Dentro de mi localidad,1 vez,1 actividad,Solo,Misma localidad,3,Primavera,Importante,Satisfecho
+16,38,Femenino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Localidades cercanas,3,Otoño,Muy importante,Muy satisfecho
+17,21,Masculino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Localidades cercanas,4,Verano,Importante,Satisfecho
+18,25,Femenino,Dentro de mi localidad,1 vez,Mas de 5 actividades,4 a 5 personas,Misma localidad,5,Otoño,Importante,Satisfecho
+19,20,Masculino,Dentro de mi localidad,4-5 veces,1 actividad,Mas de 5 personas,Localidades cercanas,4,Primavera,Importante,Satisfecho
+20,21,Masculino,Fuera de mi localidad,2-3 veces,4 a 5 actividades,Mas de 5 personas,Localidades cercanas,4,Primavera,Importante,Insatisfecho
+21,20,Femenino,Dentro de mi localidad,4-5 veces,1 actividad,Mas de 5 personas,Localidades cercanas,4,Primavera,Importante,Muy satisfecho
+22,25,Masculino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Misma localidad,4,Primavera,Importante,Insatisfecho
+23,23,Femenino,Dentro de mi localidad,4-5 veces,Mas de 5 actividades,4 a 5 personas,Misma localidad,5,Verano,Muy importante,Satisfecho
+24,21,Masculino,Dentro de mi localidad,1 vez,2 a 3 actividades,2 a 3 personas,Localidades cercanas,3,Otoño,Poco importante,Muy satisfecho
+25,20,Femenino,Fuera de mi localidad,2-3 veces,2 a 3 actividades,Solo,Localidades cercanas,4,Primavera,Importante,Insatisfecho
+26,23,Masculino,Dentro de mi localidad,1 vez,2 a 3 actividades,Mas de 5 personas,Misma localidad,3,Primavera,Muy importante,Muy satisfecho
+27,21,Femenino,Dentro de mi localidad,4-5 veces,2 a 3 actividades,Mas de 5 personas,Localidades cercanas,3,Primavera,Importante,Satisfecho
+28,25,Masculino,Dentro de mi localidad,4-5 veces,Mas de 5 actividades,4 a 5 personas,Misma localidad,5,Verano,Muy importante,Satisfecho
+29,20,Masculino,Dentro de mi localidad,1 vez,1 actividad,4 a 5 personas,Misma localidad,4,Primavera,Poco importante,Insatisfecho
+30,21,Masculino,Dentro de mi localidad,2-3 veces,4 a 5 actividades,2 a 3 personas,Localidades cercanas,4,Otoño,Importante,Satisfecho
