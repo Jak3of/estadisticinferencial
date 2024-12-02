@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 
-def latex_copyable(formula, label=""):
+def latex_copyable(formula, label):
     """Muestra una fórmula LaTeX con un botón para copiar."""
     col1, col2 = st.columns([4, 1])
     with col1:
@@ -49,8 +49,6 @@ def cargar_datos():
 
 # Cargar datos
 df = cargar_datos()
-
-
 
 # Título principal
 st.title("🔍 Análisis Inferencial")
@@ -849,68 +847,33 @@ with tab1:
         st.write("## g) Distribución Muestral para Diferencia de Proporciones")
         
         st.write("""
-        Esta sección permite analizar la diferencia entre dos proporciones poblacionales.
-        Es útil cuando queremos comparar proporciones entre dos grupos diferentes.
+        Esta sección analiza la diferencia entre las proporciones de satisfacción alta (≥4) entre hombres y mujeres.
         """)
         
-        # Entrada de datos
-        col1, col2 = st.columns(2)
+        # Calcular proporciones y tamaños de muestra por género
+        satisfaccion_alta = 4  # Definimos satisfacción alta como ≥4
         
-        with col1:
-            # Grupo 1
-            st.write("### Grupo 1")
-            p1 = st.number_input(
-                "Proporción del grupo 1 (p₁):",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.29,
-                step=0.01,
-                key="prop1"
-            )
-            n1 = st.number_input(
-                "Tamaño de muestra del grupo 1 (n₁):",
-                min_value=1,
-                value=21,
-                step=1,
-                key="n1_prop_diff"
-            )
-            
-        with col2:
-            # Grupo 2
-            st.write("### Grupo 2")
-            p2 = st.number_input(
-                "Proporción del grupo 2 (p₂):",
-                min_value=0.0,
-                max_value=1.0,
-                value=0.51,
-                step=0.01,
-                key="prop2"
-            )
-            n2 = st.number_input(
-                "Tamaño de muestra del grupo 2 (n₂):",
-                min_value=1,
-                value=39,
-                step=1,
-                key="n2_prop_diff"
-            )
+        # Grupo 1: Masculino (Género = 1)
+        grupo1 = df[df['Genero'] == 1]
+        n1 = len(grupo1)
+        satisfechos1 = sum(grupo1['Satisfaccion'] >= satisfaccion_alta)
+        p1 = satisfechos1 / n1
         
-        # Verificar condiciones
-        if n1 <= 0 or n2 <= 0:
-            st.error("Los tamaños de muestra deben ser mayores que 0")
-            st.stop()
-        if not (0 <= p1 <= 1) or not (0 <= p2 <= 1):
-            st.error("Las proporciones deben estar entre 0 y 1")
-            st.stop()
+        # Grupo 2: Femenino (Género = 2)
+        grupo2 = df[df['Genero'] == 2]
+        n2 = len(grupo2)
+        satisfechos2 = sum(grupo2['Satisfaccion'] >= satisfaccion_alta)
+        p2 = satisfechos2 / n2
             
         # Mostrar información básica
         st.write("### Información del Problema")
         st.write(f"""
-        **Grupo 1:**
+        **Grupo 1 (Masculino):**
         - Proporción (p₁): {p1:.4f}
         - Tamaño de muestra (n₁): {n1}
         - Complemento (1-p₁): {1-p1:.4f}
         
-        **Grupo 2:**
+        **Grupo 2 (Femenino):**
         - Proporción (p₂): {p2:.4f}
         - Tamaño de muestra (n₂): {n2}
         - Complemento (1-p₂): {1-p2:.4f}
@@ -918,10 +881,10 @@ with tab1:
         
         # Generar contexto automático
         st.write("### Contexto del Análisis")
-        contexto = f"""En un estudio para comparar la satisfacción con los servicios del centro recreativo, 
-        se tomaron muestras aleatorias de {n1} mujeres y {n2} hombres. El porcentaje de personas que 
-        expresan alta satisfacción es del {p1:.1%} en mujeres y {p2:.1%} en hombres. Encontrar la 
-        probabilidad de que la proporción de mujeres satisfechas sea mayor que la de hombres."""
+        contexto = f"""En nuestro estudio de satisfacción del centro recreativo, 
+        se analizaron las respuestas de {n1} hombres y {n2} mujeres. El porcentaje de personas que 
+        expresan alta satisfacción (≥4) es del {p1:.1%} en hombres y {p2:.1%} en mujeres. Analizaremos 
+        si existe una diferencia significativa entre estas proporciones."""
         
         st.write(contexto)
         
@@ -931,9 +894,9 @@ with tab1:
         
         st.write("""
         Donde:
-        - p₁, p₂ = Proporciones muestrales
+        - p₁, p₂ = Proporciones muestrales de satisfacción alta
         - π₁, π₂ = Proporciones poblacionales (asumimos π₁ = π₂)
-        - n₁, n₂ = Tamaños de muestra
+        - n₁, n₂ = Tamaños de muestra por género
         """)
         
         # Cálculos
@@ -1009,7 +972,7 @@ with tab1:
                 yaxis_title="Densidad",
                 showlegend=True
             )
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, use_container_width=True)
         
         # Interpretación
         st.write("### Interpretación:")
@@ -1018,20 +981,20 @@ with tab1:
             interpretacion = f"""
             El valor del estadístico Z ({z_stat:.4f}) cae en la región crítica 
             (|Z| > {abs(z_crit_right):.4f}), lo que sugiere que hay evidencia estadística 
-            significativa de que existe una diferencia entre las proporciones poblacionales
-            con un nivel de significancia de 0.05.
+            significativa de que existe una diferencia entre las proporciones de satisfacción alta
+            entre hombres y mujeres, con un nivel de significancia de 0.05.
             
-            La probabilidad de que la proporción del grupo 1 sea mayor que la del grupo 2 
+            La probabilidad de que la proporción de satisfacción alta en hombres sea mayor que en mujeres 
             es {p_mayor:.4f} ({p_mayor*100:.1f}%).
             """
         else:
             interpretacion = f"""
             El valor del estadístico Z ({z_stat:.4f}) no cae en la región crítica 
             (|Z| ≤ {abs(z_crit_right):.4f}), lo que sugiere que no hay evidencia estadística 
-            significativa de que exista una diferencia entre las proporciones poblacionales
-            con un nivel de significancia de 0.05.
+            significativa de que exista una diferencia entre las proporciones de satisfacción alta
+            entre hombres y mujeres, con un nivel de significancia de 0.05.
             
-            La probabilidad de que la proporción del grupo 1 sea mayor que la del grupo 2 
+            La probabilidad de que la proporción de satisfacción alta en hombres sea mayor que en mujeres 
             es {p_mayor:.4f} ({p_mayor*100:.1f}%).
             """
         
@@ -1126,6 +1089,13 @@ with tab2:
         st.write("### Fórmula:")
         latex_copyable(r"IC = \bar{x} \pm Z_{1-\frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}}", "ic_media_formula")
         
+        # Resolución de la fórmula
+        st.write("### Resolución de la Fórmula:")
+        latex_copyable(f"IC = {media_muestral:.4f} \pm {z_value:.4f} \\frac{{{desv_est:.4f}}}{{\sqrt{{{n_ic}}}}}", "ic_media_resolucion_1")
+        latex_copyable(f"IC = {media_muestral:.4f} \pm {z_value:.4f} \\times {desv_est/np.sqrt(n_ic):.4f}", "ic_media_resolucion_2")
+        latex_copyable(f"IC = {media_muestral:.4f} \pm {error_est:.4f}", "ic_media_resolucion_3")
+        latex_copyable(f"IC = [{ic_lower:.4f}, {ic_upper:.4f}]", "ic_media_resolucion_4")
+
         # Cálculos intermedios
         st.write("### Cálculos:")
         st.write(f"""
@@ -1282,6 +1252,13 @@ with tab2:
         st.write("### Fórmula:")
         latex_copyable(r"IC = \bar{x} \pm t_{n-1,1-\frac{\alpha}{2}} \frac{s}{\sqrt{n}}", "ic_media_t_formula")
         
+        # Resolución de la fórmula
+        st.write("### Resolución de la Fórmula:")
+        latex_copyable(f"IC = {media_muestral:.4f} \pm {t_value:.4f} \\frac{{{desv_est_muestral:.4f}}}{{\sqrt{{{n_ic}}}}}", "ic_media_t_resolucion_1")
+        latex_copyable(f"IC = {media_muestral:.4f} \pm {t_value:.4f} \\times {desv_est_muestral/np.sqrt(n_ic):.4f}", "ic_media_t_resolucion_2")
+        latex_copyable(f"IC = {media_muestral:.4f} \pm {error_est:.4f}", "ic_media_t_resolucion_3")
+        latex_copyable(f"IC = [{ic_lower:.4f}, {ic_upper:.4f}]", "ic_media_t_resolucion_4")
+
         # Cálculos intermedios
         st.write("### Cálculos:")
         st.write(f"""
@@ -1494,6 +1471,13 @@ with tab2:
         st.write("### Fórmula:")
         latex_copyable(r"IC(\mu_1 - \mu_2) = (\bar{X}_1 - \bar{X}_2) \pm Z_{1-\frac{\alpha}{2}} \sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}", "ic_diff_formula")
         
+        # Resolución de la fórmula
+        st.write("### Resolución de la Fórmula:")
+        latex_copyable(f"IC = ({media1:.4f} - {media2:.4f}) \pm {z_value:.4f} \sqrt{{{sigma1:.4f}²/{n1} + {sigma2:.4f}²/{n2}}}", "ic_diff_med_paso1")
+        latex_copyable(f"IC = {diff_medias:.4f} \pm {z_value:.4f} \\times {np.sqrt(sigma1**2/n1 + sigma2**2/n2):.4f}", "ic_diff_med_paso2")
+        latex_copyable(f"IC = {diff_medias:.4f} \pm {error_est:.4f}", "ic_diff_med_paso3")
+        latex_copyable(f"IC = [{ic_lower:.4f}, {ic_upper:.4f}]", "ic_diff_med_paso4")
+
         # Cálculos intermedios
         st.write("### Cálculos:")
         st.write(f"""
@@ -1660,6 +1644,13 @@ with tab2:
         st.write("### Fórmula:")
         latex_copyable(r"IC(\pi) = \hat{p} \pm Z_{1-\frac{\alpha}{2}} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}", "ic_prop_formula")
         
+        # Resolución de la fórmula
+        st.write("### Resolución de la Fórmula:")
+        latex_copyable(f"IC = {p_hat:.4f} \pm {z_value:.4f} \sqrt{{\frac{{{p_hat:.4f}(1-{p_hat:.4f})}}{{{n}}}}}", "ic_prop_paso1")
+        latex_copyable(f"IC = {p_hat:.4f} \pm {z_value:.4f} \\times {np.sqrt(p_hat*(1-p_hat)/n):.4f}", "ic_prop_paso2")
+        latex_copyable(f"IC = {p_hat:.4f} \pm {error_est:.4f}", "ic_prop_paso3")
+        latex_copyable(f"IC = [{ic_lower:.4f}, {ic_upper:.4f}]", "ic_prop_paso4")
+
         # Cálculos intermedios
         st.write("### Cálculos:")
         st.write(f"""
@@ -1690,14 +1681,14 @@ with tab2:
                            min(1, p_hat + 4*error_est), 1000)
         y = stats.norm.pdf(x_vals, p_hat, error_est/z_value)
         
-        # Crear el gráfico con plotly
+        # Crear figura
         fig = go.Figure()
         
         # Agregar la curva normal
         fig.add_trace(go.Scatter(x=x_vals, y=y, mode='lines', name='Distribución Normal',
                                line=dict(color='blue')))
         
-        # Agregar el área del intervalo de confianza
+        # Agregar área del intervalo de confianza
         x_ic = np.linspace(ic_lower, ic_upper, 1000)
         y_ic = stats.norm.pdf(x_ic, p_hat, error_est/z_value)
         fig.add_trace(go.Scatter(x=x_ic, y=y_ic, 
@@ -1744,7 +1735,7 @@ with tab2:
         se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%})."""
         
         st.write(interpretacion)
-
+        
     # g) Diferencia de Proporciones
     with conf_tabs[4]:
         st.write("## 7.5 Intervalo de Confianza para la Diferencia de Proporciones")
@@ -1843,14 +1834,12 @@ with tab2:
         # Fórmula
         st.write("### Fórmula del Intervalo de Confianza")
         formula = r"p_1 - p_2 \pm Z_{1-\frac{\alpha}{2}} \sqrt{\frac{p_1q_1}{n_1} + \frac{p_2q_2}{n_2}}"
-        latex_copyable(formula, "ic_diff_prop")
+        latex_copyable(formula, "ic_diff_prop_formula")
         
         st.write("### Cálculos")
-        st.write(f"""
-        1. Valor crítico Z₍₁₋α/₂₎ = {z_critico:.4f}
-        2. Error estándar = √({p1:.4f}×{q1:.4f}/{n1} + {p2:.4f}×{q2:.4f}/{n2}) = {error_est:.4f}
-        3. Margen de error = {z_critico:.4f} × {error_est:.4f} = {margen_error:.4f}
-        """)
+        latex_copyable(f"Z_{{1-\\frac{{\\alpha}}{{2}}}} = {z_critico:.4f}", "ic_diff_prop_paso1")
+        latex_copyable(f"\\text{{Error estándar}} = \\sqrt{{\\frac{{{p1:.4f}\\times{q1:.4f}}}{{{n1}}} + \\frac{{{p2:.4f}\\times{q2:.4f}}}{{{n2}}}}} = {error_est:.4f}", "ic_diff_prop_paso2")
+        latex_copyable(f"\\text{{Margen de error}} = {z_critico:.4f} \\times {error_est:.4f} = {margen_error:.4f}", "ic_diff_prop_paso3")
         
         # Intervalo de confianza
         st.write("### Intervalo de Confianza")
@@ -1861,19 +1850,20 @@ with tab2:
         latex_copyable(f"{ic_lower:.4f} < π < {ic_upper:.4f}", "ic_diff_prop_result")
         
         # Interpretación
-        st.write("### Interpretación")
-        interpretacion = f"""
-        Con un {nivel_conf:.0%} de confianza, la diferencia de proporciones verdaderas entre los dos grupos 
-        se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
-        """
-        if ic_lower < 0 and ic_upper > 0:
-            interpretacion += """
+        st.write("### Interpretación:")
+        
+        if abs(ic_lower) < 0.01 and abs(ic_upper) > 0.01:
+            interpretacion = f"""
+            Con un {nivel_conf:.0%} de confianza, la diferencia de proporciones verdaderas entre los dos grupos 
+            se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
             
             Como el intervalo contiene el cero, no hay evidencia suficiente para concluir que existe 
             una diferencia significativa entre las proporciones de los dos grupos.
             """
         else:
-            interpretacion += """
+            interpretacion = f"""
+            Con un {nivel_conf:.0%} de confianza, la diferencia de proporciones verdaderas entre los dos grupos 
+            se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
             
             Como el intervalo no contiene el cero, hay evidencia suficiente para concluir que existe 
             una diferencia significativa entre las proporciones de los dos grupos.
@@ -1945,7 +1935,7 @@ with tab2:
         
         # Fórmula principal
         st.write("### Fórmula:")
-        latex_copyable(r"IC(\sigma^2) = \left(\frac{(n-1)s^2}{\chi^2_{n-1,1-\frac{\alpha}{2}}}, \frac{(n-1)s^2}{\chi^2_{n-1,\frac{\alpha}{2}}}\right)", "ic_varianza_formula")
+        latex_copyable(r"IC(\sigma^2) = \left(\frac{(n-1)s^2}{\chi^2_{n-1,1-\frac{\alpha}{2}}}, \frac{(n-1)s^2}{\chi^2_{n-1,\frac{\alpha}{2}}}\right)", "ic_var_formula")
         
         st.write("""
         Donde:
@@ -1954,3 +1944,8 @@ with tab2:
         - χ² = Valor crítico de la distribución chi-cuadrado
         - α = Nivel de significancia (1 - nivel de confianza)
         """)
+        
+        # Pasos de cálculo
+        st.write("### Pasos de cálculo:")
+        latex_copyable(r"\text{Límite inferior: } \frac{(n-1)s^2}{\chi^2_{n-1,1-\frac{\alpha}{2}}}", "ic_var_paso1")
+        latex_copyable(r"\text{Límite superior: } \frac{(n-1)s^2}{\chi^2_{n-1,\frac{\alpha}{2}}}", "ic_var_paso2")
