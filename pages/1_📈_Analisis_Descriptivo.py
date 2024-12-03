@@ -12,8 +12,7 @@ st.set_page_config(page_title="Análisis Descriptivo", page_icon="📈", layout=
 def cargar_datos():
     ruta_base = Path(__file__).parent.parent
     ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
-    df = pd.read_csv(ruta_datos)
-    return df
+    return pd.read_csv(ruta_datos)
 
 # Cargar datos
 df = cargar_datos()
@@ -43,19 +42,19 @@ tab1, tab2, tab3 = st.tabs(["Variables y Tipos", "Gráficos", "Medidas Estadíst
 with tab1:
     st.header("2.2 Variables y Tipos de Variables")
     
-    # Definir tipos de variables (usando nombres largos para la interfaz)
+    # Definir tipos de variables
     variables_info = {
-        '1. ¿Cuál es tu edad?': "Cuantitativa discreta",
-        '2. ¿Cuál es tu género?': "Cualitativa nominal",
-        '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?': "Cualitativa nominal",
-        '4. ¿Cuántas veces visitas el centro recreativo por semana?': "Cualitativa ordinal",
-        '5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?': "Cualitativa ordinal",
-        '6. ¿Con cuántas personas normalmente visitas el centro recreativo?': "Cualitativa ordinal",
-        '7. ¿Dónde resides en relación con el centro recreativo que visitas?': "Cualitativa nominal",
-        '8. ¿Cómo calificarías tu preferencia por este centro recreativo?': "Cualitativa ordinal",
-        '9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?': "Cualitativa ordinal",
-        '10. ¿En qué épocas del año sueles visitar más los centros de recreación?': "Cualitativa nominal",
-        '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?': "Cualitativa ordinal"
+        "1. ¿Cuál es tu edad?": "Cuantitativa discreta",
+        "2. ¿Cuál es tu género?": "Cualitativa nominal",
+        "3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?": "Cualitativa nominal",
+        "4. ¿Cuántas veces visitas el centro recreativo por semana?": "Cualitativa ordinal",
+        "5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?": "Cualitativa ordinal",
+        "6. ¿Con cuántas personas normalmente visitas el centro recreativo?": "Cualitativa ordinal",
+        "7. ¿Dónde resides en relación con el centro recreativo que visitas?": "Cualitativa nominal",
+        "8. ¿Cómo calificarías tu preferencia por este centro recreativo?": "Cualitativa ordinal",
+        "9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?": "Cualitativa ordinal",
+        "10. ¿En qué épocas del año sueles visitar más los centros de recreación?": "Cualitativa nominal",
+        "11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?": "Cualitativa ordinal"
     }
     
     # Mostrar tabla de variables
@@ -128,13 +127,13 @@ with tab2:
             }
             # Aplicar el mapeo y recalcular las frecuencias
             df_temp = df.copy()
-            df_temp[variable_seleccionada] = df_temp[variable_seleccionada].map(satisfaccion_map)
+            df_temp['11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?'] = df_temp['11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?'].map(satisfaccion_map)
             
             # Asegurarse de que todas las categorías estén presentes
             todas_categorias = ['Insatisfecho', 'Satisfecho', 'Muy Satisfecho']
             counts = pd.DataFrame({
                 'Categoría': todas_categorias,
-                'Cantidad': [df_temp[variable_seleccionada].eq(cat).sum() for cat in todas_categorias]
+                'Cantidad': [df_temp['11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?'].eq(cat).sum() for cat in todas_categorias]
             })
         
         # Crear una copia de counts para los gráficos (sin el Total)
@@ -203,35 +202,29 @@ with tab3:
     
     # Convertir frecuencia de visitas a numérico
     frecuencia_map = {
-        'Una vez': 1,
-        'Dos a tres veces': 2.5,
-        'Cuatro a cinco veces': 4.5,
-        'Más de cinco veces': 6
+        '1 vez': 1,
+        '2-3 veces': 2.5,
+        '4-5 veces': 4.5,
+        'Más de 5 veces': 6
     }
-    
     df_num = df.copy()
-    # Crear nueva columna numérica para frecuencia
-    df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'] = df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'].map(frecuencia_map)
+    df_num['4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)'] = df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'].map(frecuencia_map)
     
     # Seleccionar variables numéricas/ordinales para análisis
-    variables_numericas = {
-        "Frecuencia de visitas": '4. ¿Cuántas veces visitas el centro recreativo por semana?',
-        "Preferencia por el centro": '8. ¿Cómo calificarías tu preferencia por este centro recreativo?'
-    }
+    variables_numericas = ["8. ¿Cómo calificarías tu preferencia por este centro recreativo?", "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)"]
     
     variable_num = st.selectbox(
         "Seleccione la variable para análisis numérico",
-        list(variables_numericas.keys())
+        variables_numericas
     )
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.subheader("2.5.1 Medidas de Tendencia Central")
-        columna_seleccionada = variables_numericas[variable_num]
-        data = df_num[columna_seleccionada]
+        data = df_num[variable_num] if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)" else df[variable_num]
         
-        if variable_num == "Frecuencia de visitas":
+        if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)":
             moda_original = df['4. ¿Cuántas veces visitas el centro recreativo por semana?'].mode()[0]
         else:
             moda_original = data.mode()[0]
@@ -239,7 +232,7 @@ with tab3:
         medidas_centrales = {
             "Media": np.mean(data),
             "Mediana": np.median(data),
-            "Moda": moda_original if variable_num == "Frecuencia de visitas" else data.mode()[0]
+            "Moda": moda_original if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)" else data.mode()[0]
         }
         
         for medida, valor in medidas_centrales.items():
@@ -262,22 +255,22 @@ with tab3:
     
     # Visualización de la distribución
     st.subheader("Distribución de la Variable")
-    if variable_num == "Frecuencia de visitas":
+    if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)":
         fig = px.histogram(
             df_num, 
-            x=variables_numericas[variable_num],
+            x=variable_num,
             title=f"Distribución de Frecuencia de Visitas",
             nbins=10
         )
         # Personalizar etiquetas del eje x
         fig.update_xaxes(
-            ticktext=['Una vez', 'Dos a tres veces', 'Cuatro a cinco veces', 'Más de cinco veces'],
+            ticktext=['1 vez', '2-3 veces', '4-5 veces', 'Más de 5 veces'],
             tickvals=[1, 2.5, 4.5, 6]
         )
     else:
         fig = px.histogram(
             df, 
-            x=variables_numericas[variable_num],
+            x=variable_num,
             title=f"Distribución de {variable_num}",
             nbins=20
         )
