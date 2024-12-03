@@ -32,6 +32,10 @@ def cargar_datos():
     ruta_base = Path(__file__).parent.parent
     ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
     df = pd.read_csv(ruta_datos)
+    
+    # Renombrar las columnas usando el mapeo inverso (de nombres largos a cortos)
+    df = df.rename(columns=columnas_mapping)
+    
     return df
 
 # Cargar datos
