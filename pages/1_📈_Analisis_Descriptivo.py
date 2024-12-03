@@ -7,35 +7,12 @@ from pathlib import Path
 # Configuración de la página
 st.set_page_config(page_title="Análisis Descriptivo", page_icon="📈", layout="wide")
 
-# Mapeo de nombres de columnas (largo a corto)
-columnas_mapping = {
-    '1. ¿Cuál es tu edad?': 'Edad',
-    '2. ¿Cuál es tu género?': 'Genero',
-    '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?': 'Ubicacion',
-    '4. ¿Cuántas veces visitas el centro recreativo por semana?': 'Frecuencia',
-    '5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?': 'Actividades',
-    '6. ¿Con cuántas personas normalmente visitas el centro recreativo?': 'Compania',
-    '7. ¿Dónde resides en relación con el centro recreativo que visitas?': 'Residencia',
-    '8. ¿Cómo calificarías tu preferencia por este centro recreativo?': 'Preferencia',
-    '9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?': 'Costo',
-    '10. ¿En qué épocas del año sueles visitar más los centros de recreación?': 'Epoca',
-    '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?': 'Satisfaccion'
-}
-
-# Crear mapeo inverso (corto a largo)
-nombres_cortos_a_largos = {v: k for k, v in columnas_mapping.items()}
-nombres_largos_a_cortos = columnas_mapping
-
 # Función para cargar datos
 @st.cache_data
 def cargar_datos():
     ruta_base = Path(__file__).parent.parent
     ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
     df = pd.read_csv(ruta_datos)
-    
-    # Renombrar las columnas usando el mapeo inverso (de nombres largos a cortos)
-    df = df.rename(columns=columnas_mapping)
-    
     return df
 
 # Cargar datos
@@ -68,17 +45,17 @@ with tab1:
     
     # Definir tipos de variables (usando nombres largos para la interfaz)
     variables_info = {
-        nombres_cortos_a_largos['Edad']: "Cuantitativa discreta",
-        nombres_cortos_a_largos['Genero']: "Cualitativa nominal",
-        nombres_cortos_a_largos['Ubicacion']: "Cualitativa nominal",
-        nombres_cortos_a_largos['Frecuencia']: "Cualitativa ordinal",
-        nombres_cortos_a_largos['Actividades']: "Cualitativa ordinal",
-        nombres_cortos_a_largos['Compania']: "Cualitativa ordinal",
-        nombres_cortos_a_largos['Residencia']: "Cualitativa nominal",
-        nombres_cortos_a_largos['Preferencia']: "Cualitativa ordinal",
-        nombres_cortos_a_largos['Costo']: "Cualitativa ordinal",
-        nombres_cortos_a_largos['Epoca']: "Cualitativa nominal",
-        nombres_cortos_a_largos['Satisfaccion']: "Cualitativa ordinal"
+        '1. ¿Cuál es tu edad?': "Cuantitativa discreta",
+        '2. ¿Cuál es tu género?': "Cualitativa nominal",
+        '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?': "Cualitativa nominal",
+        '4. ¿Cuántas veces visitas el centro recreativo por semana?': "Cualitativa ordinal",
+        '5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?': "Cualitativa ordinal",
+        '6. ¿Con cuántas personas normalmente visitas el centro recreativo?': "Cualitativa ordinal",
+        '7. ¿Dónde resides en relación con el centro recreativo que visitas?': "Cualitativa nominal",
+        '8. ¿Cómo calificarías tu preferencia por este centro recreativo?': "Cualitativa ordinal",
+        '9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?': "Cualitativa ordinal",
+        '10. ¿En qué épocas del año sueles visitar más los centros de recreación?': "Cualitativa nominal",
+        '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?': "Cualitativa ordinal"
     }
     
     # Mostrar tabla de variables
@@ -125,20 +102,19 @@ with tab2:
     
     with col1:
         # Gráficos
-        nombre_corto = nombres_largos_a_cortos[variable_seleccionada]
-        if nombre_corto == 'Edad':
+        if variable_seleccionada == '1. ¿Cuál es tu edad?':
             # Manejo especial para variable numérica Edad
             counts = pd.DataFrame({
-                'Categoría': df[nombre_corto].astype(str),
+                'Categoría': df[variable_seleccionada].astype(str),
                 'Cantidad': 1
             }).groupby('Categoría').count().reset_index()
         else:
             # Para variables categóricas
-            counts = df[nombre_corto].value_counts().reset_index()
+            counts = df[variable_seleccionada].value_counts().reset_index()
             counts.columns = ['Categoría', 'Cantidad']
         
         # Unificar categorías de satisfacción si es la variable seleccionada
-        if nombre_corto == 'Satisfaccion':
+        if variable_seleccionada == '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?':
             # Crear un mapeo para unificar las categorías
             satisfaccion_map = {
                 'Poco satisfecho': 'Insatisfecho',
@@ -152,13 +128,13 @@ with tab2:
             }
             # Aplicar el mapeo y recalcular las frecuencias
             df_temp = df.copy()
-            df_temp['Satisfaccion'] = df_temp['Satisfaccion'].map(satisfaccion_map)
+            df_temp[variable_seleccionada] = df_temp[variable_seleccionada].map(satisfaccion_map)
             
             # Asegurarse de que todas las categorías estén presentes
             todas_categorias = ['Insatisfecho', 'Satisfecho', 'Muy Satisfecho']
             counts = pd.DataFrame({
                 'Categoría': todas_categorias,
-                'Cantidad': [df_temp['Satisfaccion'].eq(cat).sum() for cat in todas_categorias]
+                'Cantidad': [df_temp[variable_seleccionada].eq(cat).sum() for cat in todas_categorias]
             })
         
         # Crear una copia de counts para los gráficos (sin el Total)
@@ -235,12 +211,12 @@ with tab3:
     
     df_num = df.copy()
     # Crear nueva columna numérica para frecuencia
-    df_num['Frecuencia_Numerica'] = df_num['Frecuencia'].map(frecuencia_map)
+    df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'] = df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'].map(frecuencia_map)
     
     # Seleccionar variables numéricas/ordinales para análisis
     variables_numericas = {
-        "Frecuencia de visitas": "Frecuencia_Numerica",
-        "Preferencia por el centro": "Preferencia"
+        "Frecuencia de visitas": '4. ¿Cuántas veces visitas el centro recreativo por semana?',
+        "Preferencia por el centro": '8. ¿Cómo calificarías tu preferencia por este centro recreativo?'
     }
     
     variable_num = st.selectbox(
@@ -256,7 +232,7 @@ with tab3:
         data = df_num[columna_seleccionada]
         
         if variable_num == "Frecuencia de visitas":
-            moda_original = df['Frecuencia'].mode()[0]
+            moda_original = df['4. ¿Cuántas veces visitas el centro recreativo por semana?'].mode()[0]
         else:
             moda_original = data.mode()[0]
         
