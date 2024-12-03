@@ -12,7 +12,26 @@ st.set_page_config(page_title="Análisis Descriptivo", page_icon="📈", layout=
 def cargar_datos():
     ruta_base = Path(__file__).parent.parent
     ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
-    return pd.read_csv(ruta_datos)
+    df = pd.read_csv(ruta_datos)
+    
+    # Mapeo de nombres de columnas
+    columnas_mapping = {
+        'Edad': '1. ¿Cuál es tu edad?',
+        'Genero': '2. ¿Cuál es tu género?',
+        'Ubicacion': '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?',
+        'Frecuencia': '4. ¿Cuántas veces visitas el centro recreativo por semana?',
+        'Actividades': '5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?',
+        'Compania': '6. ¿Con cuántas personas normalmente visitas el centro recreativo?',
+        'Residencia': '7. ¿Dónde resides en relación con el centro recreativo que visitas?',
+        'Preferencia': '8. ¿Cómo calificarías tu preferencia por este centro recreativo?',
+        'Costo': '9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?',
+        'Epoca': '10. ¿En qué épocas del año sueles visitar más los centros de recreación?',
+        'Satisfaccion': '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?'
+    }
+    
+    # Renombrar columnas
+    df = df.rename(columns=columnas_mapping)
+    return df
 
 # Cargar datos
 df = cargar_datos()
