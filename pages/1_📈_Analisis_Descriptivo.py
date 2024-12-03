@@ -6,16 +6,7 @@ from pathlib import Path
 
 # Configuración de la página
 st.set_page_config(page_title="Análisis Descriptivo", page_icon="📈", layout="wide")
-
-# Función para cargar datos
-@st.cache_data
-def cargar_datos():
-    ruta_base = Path(__file__).parent.parent
-    ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
-    df = pd.read_csv(ruta_datos)
-    
-    # Mapeo de nombres de columnas (corto a largo)
-    columnas_mapping = {
+columnas_mapping = {
         'Edad': '1. ¿Cuál es tu edad?',
         'Genero': '2. ¿Cuál es tu género?',
         'Ubicacion': '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?',
@@ -28,6 +19,15 @@ def cargar_datos():
         'Epoca': '10. ¿En qué épocas del año sueles visitar más los centros de recreación?',
         'Satisfaccion': '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?'
     }
+# Función para cargar datos
+@st.cache_data
+def cargar_datos():
+    ruta_base = Path(__file__).parent.parent
+    ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
+    df = pd.read_csv(ruta_datos)
+    
+    # Mapeo de nombres de columnas (corto a largo)
+    
     
     # Crear mapeo inverso (largo a corto)
     columnas_mapping_inv = {v: k for k, v in columnas_mapping.items()}
