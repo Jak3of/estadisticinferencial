@@ -6,40 +6,35 @@ from pathlib import Path
 
 # Configuración de la página
 st.set_page_config(page_title="Análisis Descriptivo", page_icon="📈", layout="wide")
+
+# Mapeo de nombres de columnas (largo a corto)
 columnas_mapping = {
-        'Edad': '1. ¿Cuál es tu edad?',
-        'Genero': '2. ¿Cuál es tu género?',
-        'Ubicacion': '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?',
-        'Frecuencia': '4. ¿Cuántas veces visitas el centro recreativo por semana?',
-        'Actividades': '5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?',
-        'Compania': '6. ¿Con cuántas personas normalmente visitas el centro recreativo?',
-        'Residencia': '7. ¿Dónde resides en relación con el centro recreativo que visitas?',
-        'Preferencia': '8. ¿Cómo calificarías tu preferencia por este centro recreativo?',
-        'Costo': '9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?',
-        'Epoca': '10. ¿En qué épocas del año sueles visitar más los centros de recreación?',
-        'Satisfaccion': '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?'
-    }
+    '1. ¿Cuál es tu edad?': 'Edad',
+    '2. ¿Cuál es tu género?': 'Genero',
+    '3. ¿Dónde se encuentra el parque o centro recreativo que más frecuentas?': 'Ubicacion',
+    '4. ¿Cuántas veces visitas el centro recreativo por semana?': 'Frecuencia',
+    '5. ¿Cuántas actividades presenta el centro recreativo que frecuentas?': 'Actividades',
+    '6. ¿Con cuántas personas normalmente visitas el centro recreativo?': 'Compania',
+    '7. ¿Dónde resides en relación con el centro recreativo que visitas?': 'Residencia',
+    '8. ¿Cómo calificarías tu preferencia por este centro recreativo?': 'Preferencia',
+    '9. ¿Qué tan importante es el costo de entrada para ti al elegir un centro de recreación?': 'Costo',
+    '10. ¿En qué épocas del año sueles visitar más los centros de recreación?': 'Epoca',
+    '11. ¿Qué tan satisfecho estás con los centros de recreación que has visitado?': 'Satisfaccion'
+}
+
+# Crear mapeo inverso (corto a largo)
+nombres_cortos_a_largos = {v: k for k, v in columnas_mapping.items()}
+nombres_largos_a_cortos = columnas_mapping
+
 # Función para cargar datos
 @st.cache_data
 def cargar_datos():
     ruta_base = Path(__file__).parent.parent
     ruta_datos = ruta_base / 'data' / 'encuesta_recreacion.csv'
     df = pd.read_csv(ruta_datos)
-    
-    # Mapeo de nombres de columnas (corto a largo)
-    
-    
-    # Crear mapeo inverso (largo a corto)
-    columnas_mapping_inv = {v: k for k, v in columnas_mapping.items()}
-    
-    # Guardar los mapeos como variables globales
-    global nombres_cortos_a_largos, nombres_largos_a_cortos
-    nombres_cortos_a_largos = columnas_mapping
-    nombres_largos_a_cortos = columnas_mapping_inv
-    
     return df
 
-# Cargar datos y obtener los mapeos
+# Cargar datos
 df = cargar_datos()
 
 # Título de la página
@@ -130,12 +125,12 @@ with tab2:
         if nombre_corto == 'Edad':
             # Manejo especial para variable numérica Edad
             counts = pd.DataFrame({
-                'Categoría': df[variable_seleccionada].astype(str),
+                'Categoría': df[nombre_corto].astype(str),
                 'Cantidad': 1
             }).groupby('Categoría').count().reset_index()
         else:
             # Para variables categóricas
-            counts = df[variable_seleccionada].value_counts().reset_index()
+            counts = df[nombre_corto].value_counts().reset_index()
             counts.columns = ['Categoría', 'Cantidad']
         
         # Unificar categorías de satisfacción si es la variable seleccionada
