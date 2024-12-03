@@ -662,19 +662,25 @@ with tab1:
         
         # Entrada de datos
         col1, col2 = st.columns(2)
+        
+        # Calcular valores por defecto basados en datos reales
+        satisfaccion_alta = 4  # Definimos satisfacción alta como ≥4
+        total_satisfechos = sum(df['Satisfaccion'] >= satisfaccion_alta)
+        total_visitantes = len(df)
+        
         with col1:
             # Proporción poblacional
             num_exitos = st.number_input(
-                "Número de éxitos en la población:",
+                "Número de visitantes satisfechos (≥4):",
                 min_value=0,
-                value=30,
+                value=total_satisfechos,
                 step=1,
                 key="num_exitos"
             )
             tam_poblacion = st.number_input(
-                "Tamaño de la población:",
+                "Total de visitantes:",
                 min_value=1,
-                value=100,
+                value=total_visitantes,
                 step=1,
                 key="tam_poblacion"
             )
@@ -684,16 +690,17 @@ with tab1:
             n = st.number_input(
                 "Tamaño de la muestra:",
                 min_value=1,
-                value=50,
+                value=min(50, total_visitantes),  # Usar 50 o el total si es menor
                 step=1,
                 key="tam_muestra_prop"
             )
             # Proporción de referencia
+            proporcion_actual = total_satisfechos / total_visitantes
             p_ref = st.number_input(
                 "Proporción de referencia:",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.35,
+                value=round(proporcion_actual, 2),  # Redondear a 2 decimales
                 step=0.01,
                 key="prop_ref"
             )
@@ -885,7 +892,6 @@ with tab1:
         se analizaron las respuestas de {n1} hombres y {n2} mujeres. El porcentaje de personas que 
         expresan alta satisfacción (≥4) es del {p1:.1%} en hombres y {p2:.1%} en mujeres. Analizaremos 
         si existe una diferencia significativa entre estas proporciones."""
-        
         st.write(contexto)
         
         # Fórmula principal
@@ -1381,34 +1387,21 @@ with tab2:
                 options=["Genero", "Importancia_Costo"],
                 key="var_grupo_ic_diff"
             )
-            
-            # Permitir seleccionar los grupos a comparar
-            grupo_counts = df[var_grupo].value_counts()
-            grupo1 = st.selectbox(
-                "Seleccione el primer grupo",
-                options=sorted(list([g for g in grupo_counts.index])),
-                key="grupo1_ic_diff"
-            )
-            grupo2 = st.selectbox(
-                "Seleccione el segundo grupo",
-                options=sorted(list([g for g in grupo_counts.index if g != grupo1])),
-                key="grupo2_ic_diff"
-            )
         
         with col2:
             # Inputs para las varianzas poblacionales
             sigma1 = st.number_input(
-                f"Desviación estándar poblacional de {grupo1} (σ₁)",
+                f"Desviación estándar poblacional de {var_grupo} 1 (σ₁)",
                 min_value=0.1,
-                value=df[df[var_grupo] == grupo1][var_ic_diff].std(),
+                value=df[df[var_grupo] == df[var_grupo].unique()[0]][var_ic_diff].std(),
                 step=0.1,
                 key="sigma1_ic_diff"
             )
             
             sigma2 = st.number_input(
-                f"Desviación estándar poblacional de {grupo2} (σ₂)",
+                f"Desviación estándar poblacional de {var_grupo} 2 (σ₂)",
                 min_value=0.1,
-                value=df[df[var_grupo] == grupo2][var_ic_diff].std(),
+                value=df[df[var_grupo] == df[var_grupo].unique()[1]][var_ic_diff].std(),
                 step=0.1,
                 key="sigma2_ic_diff"
             )
@@ -1424,8 +1417,8 @@ with tab2:
             )
     
         # Cálculos para cada grupo
-        datos1 = df[df[var_grupo] == grupo1][var_ic_diff]
-        datos2 = df[df[var_grupo] == grupo2][var_ic_diff]
+        datos1 = df[df[var_grupo] == df[var_grupo].unique()[0]][var_ic_diff]
+        datos2 = df[df[var_grupo] == df[var_grupo].unique()[1]][var_ic_diff]
         
         n1 = len(datos1)
         n2 = len(datos2)
@@ -1444,12 +1437,12 @@ with tab2:
         # Mostrar información del problema
         st.write("### Información del Problema")
         st.write(f"""
-        **Grupo 1 ({grupo1}):**
+        **Grupo 1 ({var_grupo} 1):**
         - Tamaño de muestra (n₁): {n1}
         - Media muestral (x̄₁): {media1:.2f}
         - Desviación estándar poblacional (σ₁): {sigma1:.2f}
         
-        **Grupo 2 ({grupo2}):**
+        **Grupo 2 ({var_grupo} 2):**
         - Tamaño de muestra (n₂): {n2}
         - Media muestral (x̄₂): {media2:.2f}
         - Desviación estándar poblacional (σ₂): {sigma2:.2f}
@@ -1460,10 +1453,10 @@ with tab2:
         """)
         
         # Generar contexto automático
-        contexto = f"""Se compara la variable '{var_ic_diff}' entre {grupo1} y {grupo2}. 
+        contexto = f"""Se compara la variable '{var_ic_diff}' entre {var_grupo} 1 y {var_grupo} 2. 
         Con desviaciones estándar poblacionales conocidas de {sigma1:.2f} y {sigma2:.2f} respectivamente,
-        se toman muestras de {n1} y {n2} observaciones. Las medias muestrales son {media1:.2f} para {grupo1} 
-        y {media2:.2f} para {grupo2}. Se busca construir un intervalo de confianza al {nivel_conf:.0%} 
+        se toman muestras de {n1} y {n2} observaciones. Las medias muestrales son {media1:.2f} para {var_grupo} 1 
+        y {media2:.2f} para {var_grupo} 2. Se busca construir un intervalo de confianza al {nivel_conf:.0%} 
         para la diferencia de medias poblacionales."""
         st.write(contexto)
         
@@ -1539,7 +1532,7 @@ with tab2:
         # Personalizar el diseño
         fig.update_layout(
             title=f'Intervalo de Confianza para la Diferencia de Medias ({nivel_conf:.0%})',
-            xaxis_title=f'Diferencia en {var_ic_diff} ({grupo1} - {grupo2})',
+            xaxis_title=f'Diferencia en {var_ic_diff} ({var_grupo} 1 - {var_grupo} 2)',
             yaxis_title='Densidad',
             showlegend=True,
             xaxis=dict(showgrid=True),
@@ -1558,13 +1551,13 @@ with tab2:
         if ic_lower < 0 and ic_upper > 0:
             interpretacion = f"""
             Con un nivel de confianza del {nivel_conf:.0%}, la diferencia en {var_ic_diff} 
-            entre {grupo1} y {grupo2} se encuentra entre {ic_lower:.2f} y {ic_upper:.2f}. Como el intervalo 
+            entre {var_grupo} 1 y {var_grupo} 2 se encuentra entre {ic_lower:.2f} y {ic_upper:.2f}. Como el intervalo 
             contiene el cero, no hay evidencia suficiente para afirmar que existe una diferencia significativa 
             entre los grupos."""
         else:
             interpretacion = f"""
             Con un nivel de confianza del {nivel_conf:.0%}, la diferencia en {var_ic_diff} 
-            entre {grupo1} y {grupo2} se encuentra entre {ic_lower:.2f} y {ic_upper:.2f}. Como el intervalo 
+            entre {var_grupo} 1 y {var_grupo} 2 se encuentra entre {ic_lower:.2f} y {ic_upper:.2f}. Como el intervalo 
             no contiene el cero, hay evidencia de una diferencia significativa entre los grupos."""
         
         st.write(interpretacion)
@@ -1573,38 +1566,40 @@ with tab2:
     with conf_tabs[3]:
         st.write("## 7.4 Intervalo de Confianza para la Proporción")
         
-        # Inputs para el usuario
+        st.write("""
+        En esta sección analizaremos la proporción de visitantes satisfechos (calificación ≥4) 
+        en toda la muestra.
+        """)
+        
+        # Calcular datos reales de satisfacción
+        satisfaccion_alta = 4  # Umbral de satisfacción alta
+        n_total = len(df)
+        n_satisfechos = sum(df['Satisfaccion'] >= satisfaccion_alta)
+        p_hat = n_satisfechos/n_total
+        q_hat = 1 - p_hat
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            # Tamaño de muestra
-            n = st.number_input(
-                "Tamaño de muestra (n)",
-                min_value=1,
-                value=65,
-                step=1,
-                key="n_prop_ic_dist"
-            )
-            
-            # Número de éxitos
-            x = st.number_input(
-                "Número de éxitos (x)",
-                min_value=0,
-                max_value=n,
-                value=23,
-                step=1,
-                key="x_prop_ic_dist"
-            )
-            
-            # Calcular proporción muestral
-            p_hat = x/n
-            q_hat = 1 - p_hat
-            
-            st.write("### Estadísticos Calculados:")
+            # Mostrar datos calculados
+            st.write("### Datos de la Muestra")
             st.write(f"""
+            - Total de visitantes (n): {n_total}
+            - Visitantes satisfechos (x): {n_satisfechos}
             - Proporción muestral (p̂): {p_hat:.4f}
-            - q̂ = 1 - p̂: {q_hat:.4f}
+            - Complemento (q̂): {q_hat:.4f}
             """)
+            
+            # Proporción hipotética
+            p0 = st.number_input(
+                "Proporción hipotética (π₀)",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.75,
+                step=0.01,
+                format="%.2f",
+                key="p0_prop_ic"
+            )
             
         with col2:
             # Nivel de confianza
@@ -1614,13 +1609,30 @@ with tab2:
                 max_value=0.99,
                 value=0.95,
                 step=0.01,
-                key="nivel_conf_prop_ic_dist"
+                key="nivel_conf_prop_ic"
             )
-        
+            
+            # Calcular tamaño del efecto (h de Cohen)
+            h = 2 * np.arcsin(np.sqrt(p_hat)) - 2 * np.arcsin(np.sqrt(p0))
+            
+            # Determinar la magnitud del efecto
+            if abs(h) < 0.2:
+                efecto = "pequeño"
+            elif abs(h) < 0.5:
+                efecto = "mediano"
+            else:
+                efecto = "grande"
+                
+            st.write("### Tamaño del Efecto")
+            st.write(f"""
+            - h de Cohen: {h:.3f}
+            - Interpretación: Efecto {efecto}
+            """)
+    
         # Cálculos del intervalo
         alpha = 1 - nivel_conf
         z_value = stats.norm.ppf(1 - alpha/2)
-        error_est = z_value * np.sqrt((p_hat * q_hat)/n)
+        error_est = z_value * np.sqrt((p_hat * q_hat)/n_total)
         
         ic_lower = max(0, p_hat - error_est)  # No permitir valores negativos
         ic_upper = min(1, p_hat + error_est)  # No permitir valores mayores a 1
@@ -1628,17 +1640,14 @@ with tab2:
         # Mostrar información del problema
         st.write("### Información del Problema")
         st.write(f"""
-        Se analiza una muestra de {n} observaciones donde se encontraron {x} éxitos.
+        Se analiza una muestra de {n_total} visitantes donde se encontraron {n_satisfechos} satisfechos 
+        (calificación ≥ {satisfaccion_alta}).
+        
+        Queremos determinar si la proporción real de satisfacción es diferente de {p0:.0%}.
+        
         - Proporción muestral (p̂): {p_hat:.4f}
         - Nivel de confianza: {nivel_conf:.0%}
         """)
-        
-        # Generar contexto automático
-        st.write("### Contexto del Análisis")
-        contexto = f"""En una muestra aleatoria de {n} observaciones, se encontró que {x} corresponden a éxitos, 
-        resultando en una proporción muestral de {p_hat:.4f}. Se busca construir un intervalo de confianza 
-        al {nivel_conf:.0%} para la verdadera proporción poblacional."""
-        st.write(contexto)
         
         # Fórmula
         st.write("### Fórmula:")
@@ -1646,8 +1655,8 @@ with tab2:
         
         # Resolución de la fórmula
         st.write("### Resolución de la Fórmula:")
-        latex_copyable(f"IC = {p_hat:.4f} \pm {z_value:.4f} \sqrt{{\frac{{{p_hat:.4f}(1-{p_hat:.4f})}}{{{n}}}}}", "ic_prop_paso1")
-        latex_copyable(f"IC = {p_hat:.4f} \pm {z_value:.4f} \\times {np.sqrt(p_hat*(1-p_hat)/n):.4f}", "ic_prop_paso2")
+        latex_copyable(f"IC = {p_hat:.4f} \pm {z_value:.4f} \sqrt{{\\frac{{{p_hat:.4f}(1-{p_hat:.4f})}}{{{n_total}}}}}", "ic_prop_paso1")
+        latex_copyable(f"IC = {p_hat:.4f} \pm {z_value:.4f} \\times {np.sqrt(p_hat*(1-p_hat)/n_total):.4f}", "ic_prop_paso2")
         latex_copyable(f"IC = {p_hat:.4f} \pm {error_est:.4f}", "ic_prop_paso3")
         latex_copyable(f"IC = [{ic_lower:.4f}, {ic_upper:.4f}]", "ic_prop_paso4")
 
@@ -1659,19 +1668,37 @@ with tab2:
         - Z₍₁₋α/₂₎ = {z_value:.4f}
         
         2. Error estándar:
-        - SE = {z_value:.4f} × √({p_hat:.4f} × {q_hat:.4f}/{n})
+        - SE = {z_value:.4f} × √({p_hat:.4f} × {q_hat:.4f}/{n_total})
         - SE = {error_est:.4f}
         
         3. Cálculo del intervalo:
-        {p_hat:.4f} - {z_value:.4f} × √({p_hat:.4f} × {q_hat:.4f}/{n}) < π < {p_hat:.4f} + {z_value:.4f} × √({p_hat:.4f} × {q_hat:.4f}/{n})
         {p_hat:.4f} - {error_est:.4f} < π < {p_hat:.4f} + {error_est:.4f}
         {ic_lower:.4f} < π < {ic_upper:.4f}
         """)
         
-        # Resultado del intervalo
-        st.write("### Intervalo de Confianza:")
-        st.write(f"IC = {p_hat:.4f} ± {error_est:.4f}")
-        st.write(f"IC = [{ic_lower:.4f}, {ic_upper:.4f}]")
+        # Interpretación
+        st.write("### Interpretación:")
+        if p0 >= ic_lower and p0 <= ic_upper:
+            interpretacion = f"""
+            Con un {nivel_conf:.0%} de confianza, la proporción verdadera de visitantes satisfechos 
+            se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
+            
+            Como el valor hipotético ({p0:.4f}) está dentro del intervalo de confianza, 
+            no hay evidencia suficiente para concluir que la proporción real sea diferente de {p0:.0%}.
+            
+            El tamaño del efecto (h de Cohen) es {h:.3f}, lo que se considera un efecto {efecto}.
+            """
+        else:
+            interpretacion = f"""
+            Con un {nivel_conf:.0%} de confianza, la proporción verdadera de visitantes satisfechos 
+            se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
+            
+            Como el valor hipotético ({p0:.4f}) está fuera del intervalo de confianza, 
+            hay evidencia suficiente para concluir que la proporción real es diferente de {p0:.0%}.
+            
+            El tamaño del efecto (h de Cohen) es {h:.3f}, lo que se considera un efecto {efecto}.
+            """
+        st.write(interpretacion)
         
         # Visualización
         st.write("### Visualización")
@@ -1697,97 +1724,97 @@ with tab2:
                                line=dict(color='green', width=0),
                                fillcolor='rgba(0, 255, 0, 0.3)'))
         
-        # Agregar líneas verticales para los puntos críticos
-        for punto in [ic_lower, ic_upper]:
-            if 0 <= punto <= 1:  # Solo mostrar si está en [0,1]
-                fig.add_vline(x=punto, 
-                            line_dash="dash", 
-                            line_color="red",
-                            annotation_text=f"{punto:.4f}",
-                            annotation_position="top")
+        # Agregar líneas verticales para los límites del intervalo
+        for punto, texto in [(ic_lower, f"Límite inferior: {ic_lower:.4f}"), 
+                           (ic_upper, f"Límite superior: {ic_upper:.4f}"),
+                           (p_hat, f"Proporción muestral: {p_hat:.4f}"),
+                           (p0, f"Proporción hipotética: {p0:.4f}")]:
+            fig.add_vline(x=punto, 
+                         line_dash="dash", 
+                         line_color="red" if punto in [ic_lower, ic_upper] else "green" if punto == p_hat else "blue",
+                         annotation_text=texto,
+                         annotation_position="top")
         
-        # Agregar línea vertical para la proporción muestral
-        fig.add_vline(x=p_hat,
-                     line_color="green",
-                     annotation_text=f"p̂: {p_hat:.4f}",
-                     annotation_position="top")
-        
-        # Personalizar el diseño
+        # Actualizar layout
         fig.update_layout(
             title=f'Intervalo de Confianza para la Proporción ({nivel_conf:.0%})',
             xaxis_title='Proporción',
             yaxis_title='Densidad',
             showlegend=True,
-            xaxis=dict(showgrid=True, range=[0, 1]),  # Limitar eje x a [0,1]
+            xaxis=dict(showgrid=True),
             yaxis=dict(showgrid=True),
             annotations=[
                 dict(x=p_hat, y=max(y)*1.1,
-                     text=f"IC: [{ic_lower:.4f}, {ic_upper:.4f}]",
+                     text=f"IC: [{ic_lower:.2f}, {ic_upper:.2f}]",
                      showarrow=False)
             ]
         )
         
         st.plotly_chart(fig)
         
-        # Interpretación
-        st.write("### Interpretación")
-        interpretacion = f"""Con un nivel de confianza del {nivel_conf:.0%}, la verdadera proporción poblacional 
-        se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%})."""
-        
-        st.write(interpretacion)
-        
     # g) Diferencia de Proporciones
     with conf_tabs[4]:
         st.write("## 7.5 Intervalo de Confianza para la Diferencia de Proporciones")
         
         st.write("""
-        En una encuesta de satisfacción sobre actividades recreativas, nos interesa comparar las proporciones de satisfacción entre diferentes grupos.
-        Por ejemplo, en una muestra de 65 visitantes por grupo, se encontró que 8 visitantes del primer grupo y 12 visitantes del segundo grupo 
-        indicaron estar muy satisfechos con las actividades recreativas ofrecidas.
-
-        Calcularemos e interpretaremos un intervalo del 95% de confianza para la diferencia de proporciones verdaderas entre ambos grupos 
-        que indican estar muy satisfechos con las actividades recreativas.
+        En esta sección analizaremos la diferencia de proporciones de satisfacción alta (calificación ≥4) 
+        entre visitantes masculinos y femeninos.
         """)
         
-        # Entrada de datos
+        # Calcular proporciones y tamaños de muestra por género
+        satisfaccion_alta = 4  # Definimos satisfacción alta como ≥4
+        
+        # Grupo 1: Masculino (Género = 1)
+        grupo1 = df[df['Genero'] == 1]
+        n1 = len(grupo1)
+        satisfechos1 = sum(grupo1['Satisfaccion'] >= satisfaccion_alta)
+        p1 = satisfechos1 / n1
+        
+        # Grupo 2: Femenino (Género = 2)
+        grupo2 = df[df['Genero'] == 2]
+        n2 = len(grupo2)
+        satisfechos2 = sum(grupo2['Satisfaccion'] >= satisfaccion_alta)
+        p2 = satisfechos2 / n2
+            
+        # Entrada de datos (mostrando los valores reales calculados)
         col1, col2 = st.columns(2)
         
         with col1:
             # Grupo 1
-            st.write("### Grupo 1")
-            p1 = st.number_input(
+            st.write("### Grupo 1 (Masculino)")
+            p1_input = st.number_input(
                 "Proporción del grupo 1 (p₁):",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.1231,  # 8/65
+                value=float(p1),
                 step=0.0001,
                 format="%.4f",
                 key="p1_ic_diff_prop_dist"
             )
-            n1 = st.number_input(
+            n1_input = st.number_input(
                 "Tamaño de muestra del grupo 1 (n₁):",
                 min_value=1,
-                value=65,
+                value=int(n1),
                 step=1,
                 key="n1_ic_diff_prop_dist"
             )
             
         with col2:
             # Grupo 2
-            st.write("### Grupo 2")
-            p2 = st.number_input(
+            st.write("### Grupo 2 (Femenino)")
+            p2_input = st.number_input(
                 "Proporción del grupo 2 (p₂):",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.1846,  # 12/65
+                value=float(p2),
                 step=0.0001,
                 format="%.4f",
                 key="p2_ic_diff_prop_dist"
             )
-            n2 = st.number_input(
+            n2_input = st.number_input(
                 "Tamaño de muestra del grupo 2 (n₂):",
                 min_value=1,
-                value=65,
+                value=int(n2),
                 step=1,
                 key="n2_ic_diff_prop_dist"
             )
@@ -1802,33 +1829,33 @@ with tab2:
         z_critico = stats.norm.ppf(1 - alpha/2)
         
         # Complementos
-        q1 = 1 - p1
-        q2 = 1 - p2
+        q1 = 1 - p1_input
+        q2 = 1 - p2_input
         
         # Error estándar
-        error_est = np.sqrt((p1*q1)/n1 + (p2*q2)/n2)
+        error_est = np.sqrt((p1_input*q1)/n1_input + (p2_input*q2)/n2_input)
         
         # Límites del intervalo
         margen_error = z_critico * error_est
-        ic_lower = p1 - p2 - margen_error
-        ic_upper = p1 - p2 + margen_error
+        ic_lower = p1_input - p2_input - margen_error
+        ic_upper = p1_input - p2_input + margen_error
         
         # Mostrar resultados
         st.write("### Resultados")
         
         st.write(f"""
         #### Datos del grupo 1:
-        - Proporción muestral (p₁) = {p1:.4f}
+        - Proporción muestral (p₁) = {p1_input:.4f}
         - Complemento (q₁) = {q1:.4f}
-        - Tamaño de muestra (n₁) = {n1}
+        - Tamaño de muestra (n₁) = {n1_input}
         
         #### Datos del grupo 2:
-        - Proporción muestral (p₂) = {p2:.4f}
+        - Proporción muestral (p₂) = {p2_input:.4f}
         - Complemento (q₂) = {q2:.4f}
-        - Tamaño de muestra (n₂) = {n2}
+        - Tamaño de muestra (n₂) = {n2_input}
         
         #### Diferencia de proporciones:
-        - p₁ - p₂ = {p1-p2:.4f}
+        - p₁ - p₂ = {p1_input-p2_input:.4f}
         """)
         
         # Fórmula
@@ -1838,7 +1865,7 @@ with tab2:
         
         st.write("### Cálculos")
         latex_copyable(f"Z_{{1-\\frac{{\\alpha}}{{2}}}} = {z_critico:.4f}", "ic_diff_prop_paso1")
-        latex_copyable(f"\\text{{Error estándar}} = \\sqrt{{\\frac{{{p1:.4f}\\times{q1:.4f}}}{{{n1}}} + \\frac{{{p2:.4f}\\times{q2:.4f}}}{{{n2}}}}} = {error_est:.4f}", "ic_diff_prop_paso2")
+        latex_copyable(f"\\text{{Error estándar}} = \\sqrt{{\\frac{{{p1_input:.4f}\\times{q1:.4f}}}{{{n1_input}}} + \\frac{{{p2_input:.4f}\\times{q2:.4f}}}{{{n2_input}}}}} = {error_est:.4f}", "ic_diff_prop_paso2")
         latex_copyable(f"\\text{{Margen de error}} = {z_critico:.4f} \\times {error_est:.4f} = {margen_error:.4f}", "ic_diff_prop_paso3")
         
         # Intervalo de confianza
@@ -1847,26 +1874,48 @@ with tab2:
         Con un nivel de confianza del {nivel_conf:.0%}, el intervalo de confianza para la diferencia de proporciones es:
         """)
         
-        latex_copyable(f"{ic_lower:.4f} < π < {ic_upper:.4f}", "ic_diff_prop_result")
+        latex_copyable(f"{ic_lower:.4f} < π₁ - π₂ < {ic_upper:.4f}", "ic_diff_prop_result")
         
         # Interpretación
         st.write("### Interpretación:")
         
+        # Calcular el tamaño del efecto (h de Cohen)
+        h = 2 * np.arcsin(np.sqrt(p1_input)) - 2 * np.arcsin(np.sqrt(p2_input))
+        
+        # Determinar la magnitud del efecto
+        if abs(h) < 0.2:
+            efecto = "pequeño"
+        elif abs(h) < 0.5:
+            efecto = "mediano"
+        else:
+            efecto = "grande"
+            
+        # Definir umbral de significancia práctica (10% de diferencia)
+        umbral_practico = 0.10
+        
         if abs(ic_lower) < 0.01 and abs(ic_upper) > 0.01:
             interpretacion = f"""
-            Con un {nivel_conf:.0%} de confianza, la diferencia de proporciones verdaderas entre los dos grupos 
+            Con un {nivel_conf:.0%} de confianza, la diferencia en proporciones verdaderas entre los dos grupos 
             se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
             
             Como el intervalo contiene el cero, no hay evidencia suficiente para concluir que existe 
-            una diferencia significativa entre las proporciones de los dos grupos.
+            una diferencia estadísticamente significativa entre las proporciones de los dos grupos.
+            
+            El tamaño del efecto (h de Cohen) es {h:.3f}, lo que se considera un efecto {efecto}.
             """
         else:
+            diferencia_significativa = any(abs(x) >= umbral_practico for x in [ic_lower, ic_upper])
             interpretacion = f"""
-            Con un {nivel_conf:.0%} de confianza, la diferencia de proporciones verdaderas entre los dos grupos 
+            Con un {nivel_conf:.0%} de confianza, la diferencia en proporciones verdaderas entre los dos grupos 
             se encuentra entre {ic_lower:.4f} y {ic_upper:.4f} ({ic_lower:.1%} y {ic_upper:.1%}).
             
             Como el intervalo no contiene el cero, hay evidencia suficiente para concluir que existe 
-            una diferencia significativa entre las proporciones de los dos grupos.
+            una diferencia estadísticamente significativa entre las proporciones de los dos grupos.
+            
+            El tamaño del efecto (h de Cohen) es {h:.3f}, lo que se considera un efecto {efecto}.
+            
+            {"La diferencia también es prácticamente significativa, superando el umbral del 10%." if diferencia_significativa else
+             "Sin embargo, la diferencia podría no ser prácticamente significativa, ya que no supera el umbral del 10%."}
             """
         st.write(interpretacion)
         
@@ -1874,8 +1923,8 @@ with tab2:
         st.write("### Visualización")
         
         # Crear datos para la distribución normal
-        x = np.linspace(p1 - p2 - 4*error_est, p1 - p2 + 4*error_est, 1000)
-        y = stats.norm.pdf(x, p1 - p2, error_est)
+        x = np.linspace(p1_input - p2_input - 4*error_est, p1_input - p2_input + 4*error_est, 1000)
+        y = stats.norm.pdf(x, p1_input - p2_input, error_est)
         
         # Crear figura
         fig = go.Figure()
@@ -1895,19 +1944,24 @@ with tab2:
                                fillcolor='rgba(0, 255, 0, 0.3)'))
         
         # Agregar líneas verticales para los límites del intervalo
-        for punto in [ic_lower, ic_upper]:
+        for punto, texto in [(ic_lower, f"Límite inferior: {ic_lower:.4f}"), 
+                           (ic_upper, f"Límite superior: {ic_upper:.4f}"),
+                           (p1_input - p2_input, f"Diferencia observada: {p1_input - p2_input:.4f}")]:
             fig.add_vline(x=punto, 
                          line_dash="dash", 
                          line_color="red",
-                         annotation_text=f"{punto:.4f}",
+                         annotation_text=texto,
                          annotation_position="top")
         
-        # Agregar línea vertical para la diferencia observada
-        fig.add_vline(x=p1-p2,
-                     line_dash="dash",
-                     line_color="green",
-                     annotation_text=f"Diferencia observada: {p1-p2:.4f}",
+        # Agregar líneas para umbrales de significancia práctica
+        fig.add_vline(x=umbral_practico, 
+                     line_dash="dot",
+                     line_color="gray",
+                     annotation_text="Umbral de significancia práctica (10%)",
                      annotation_position="bottom")
+        fig.add_vline(x=-umbral_practico, 
+                     line_dash="dot",
+                     line_color="gray")
         
         # Actualizar layout
         fig.update_layout(
