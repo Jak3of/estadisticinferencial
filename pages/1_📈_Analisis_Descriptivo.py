@@ -221,29 +221,35 @@ with tab3:
     
     # Convertir frecuencia de visitas a numérico
     frecuencia_map = {
-        '1 vez': 1,
-        '2-3 veces': 2.5,
-        '4-5 veces': 4.5,
-        'Más de 5 veces': 6
+        'Una vez': 1,
+        'Dos a tres veces': 2.5,
+        'Cuatro a cinco veces': 4.5,
+        'Más de cinco veces': 6
     }
+    
     df_num = df.copy()
-    df_num['4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)'] = df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'].map(frecuencia_map)
+    # Crear nueva columna numérica para frecuencia
+    df_num['Frecuencia_Numerica'] = df_num['4. ¿Cuántas veces visitas el centro recreativo por semana?'].map(frecuencia_map)
     
     # Seleccionar variables numéricas/ordinales para análisis
-    variables_numericas = ["8. ¿Cómo calificarías tu preferencia por este centro recreativo?", "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)"]
+    variables_numericas = {
+        "Frecuencia de visitas": "Frecuencia_Numerica",
+        "Preferencia por el centro": "8. ¿Cómo calificarías tu preferencia por este centro recreativo?"
+    }
     
     variable_num = st.selectbox(
         "Seleccione la variable para análisis numérico",
-        variables_numericas
+        list(variables_numericas.keys())
     )
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.subheader("2.5.1 Medidas de Tendencia Central")
-        data = df_num[variable_num] if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)" else df[variable_num]
+        columna_seleccionada = variables_numericas[variable_num]
+        data = df_num[columna_seleccionada]
         
-        if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)":
+        if variable_num == "Frecuencia de visitas":
             moda_original = df['4. ¿Cuántas veces visitas el centro recreativo por semana?'].mode()[0]
         else:
             moda_original = data.mode()[0]
@@ -251,7 +257,7 @@ with tab3:
         medidas_centrales = {
             "Media": np.mean(data),
             "Mediana": np.median(data),
-            "Moda": moda_original if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)" else data.mode()[0]
+            "Moda": moda_original if variable_num == "Frecuencia de visitas" else data.mode()[0]
         }
         
         for medida, valor in medidas_centrales.items():
@@ -274,22 +280,22 @@ with tab3:
     
     # Visualización de la distribución
     st.subheader("Distribución de la Variable")
-    if variable_num == "4. ¿Cuántas veces visitas el centro recreativo por semana? (Numérico)":
+    if variable_num == "Frecuencia de visitas":
         fig = px.histogram(
             df_num, 
-            x=variable_num,
+            x=variables_numericas[variable_num],
             title=f"Distribución de Frecuencia de Visitas",
             nbins=10
         )
         # Personalizar etiquetas del eje x
         fig.update_xaxes(
-            ticktext=['1 vez', '2-3 veces', '4-5 veces', 'Más de 5 veces'],
+            ticktext=['Una vez', 'Dos a tres veces', 'Cuatro a cinco veces', 'Más de cinco veces'],
             tickvals=[1, 2.5, 4.5, 6]
         )
     else:
         fig = px.histogram(
             df, 
-            x=variable_num,
+            x=variables_numericas[variable_num],
             title=f"Distribución de {variable_num}",
             nbins=20
         )
